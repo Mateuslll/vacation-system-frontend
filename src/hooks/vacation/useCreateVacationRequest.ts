@@ -1,5 +1,5 @@
 import { apiPrivate } from "@/lib/api";
-import { BadRequestError, ConflictError, handleApiError, NotFoundError } from "@/lib/api-errors";
+import { BadRequestError, ConflictError, handleApiError, NotFoundError, UnprocessableEntityError } from "@/lib/api-errors";
 import { newVacationRequestSchema } from "@/lib/validations/schemas";
 import { NewVacationRequestFormData } from "@/types/forms";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -48,6 +48,8 @@ export const useCreateVacationRequest = () => {
           toast.error("Recurso não encontrado.");
         } else if (apiError instanceof ConflictError) {
           toast.error("Sobreposição de período com outra solicitação.");
+        } else if (apiError instanceof UnprocessableEntityError) {
+          toast.error("Erro de validação. Verifique periodo das datas.");
         }
       }
     } finally {

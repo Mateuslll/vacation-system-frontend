@@ -38,6 +38,9 @@ export default function NewVacationRequestPage() {
     if (startDate) {
       const minimumEndDate = addDays(startDate, 4);
       if (date < minimumEndDate) return true;
+
+      const maximumEndDate = addDays(startDate, 29);
+      if (date > maximumEndDate) return true;
     }
 
     return blockedDates ? blockedDates.some(blockedDate => isSameDay(date, blockedDate)) : false;

@@ -14,6 +14,12 @@ export class BadRequestError extends ApiError {
   }
 }
 
+export class UnprocessableEntityError extends ApiError {
+  constructor(message: string = 'Unprocessable Entity') {
+    super(message);
+    this.name = 'UnprocessableEntityError';
+  }
+}
 
 export class NotFoundError extends ApiError {
   constructor(message: string = 'Resource not found') {
@@ -83,6 +89,8 @@ export function handleApiError(error: unknown): never {
         throw new NotFoundError(message);
       case 409:
         throw new ConflictError(message);
+      case 422:
+        throw new UnprocessableEntityError(message);
       case 500:
         throw new InternalServerError(message);
       default:
