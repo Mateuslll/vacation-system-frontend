@@ -23,9 +23,17 @@ export const useCreateVacationRequest = () => {
   const onSubmit = async (data: NewVacationRequestFormData) => {
     try {
       setLoading(true);
+      
+      const formatDate = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+      
       const payload = {
-        startDate: data.startDate.toISOString().split('T')[0],
-        endDate: data.endDate.toISOString().split('T')[0],
+        startDate: formatDate(data.startDate),
+        endDate: formatDate(data.endDate),
         reason: data.reason.trim(),
       };
 

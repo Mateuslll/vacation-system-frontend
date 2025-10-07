@@ -1,19 +1,19 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Controller } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Calendar, FileText, Clock, AlertCircle, CheckCircle } from "lucide-react";
+import {useRouter} from "next/navigation";
+import {Controller} from "react-hook-form";
+import {Button} from "@/components/ui/button";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Label} from "@/components/ui/label";
+import {Textarea} from "@/components/ui/textarea";
+import {Separator} from "@/components/ui/separator";
+import {AlertCircle, ArrowLeft, Calendar, CheckCircle, Clock, FileText} from "lucide-react";
 import Link from "next/link";
-import { DatePicker } from "@/components/DatePicker";
-import { useCreateVacationRequest } from "@/hooks/vacation/useCreateVacationRequest";
-import { useListVacationApproved } from "@/hooks/vacation/useListVacationApproved";
-import { NewVacationRequestFormData } from "@/types/forms";
-import { addDays, startOfDay, isSameDay } from "date-fns";
+import {DatePicker} from "@/components/DatePicker";
+import {useCreateVacationRequest} from "@/hooks/vacation/useCreateVacationRequest";
+import {useListVacationApproved} from "@/hooks/vacation/useListVacationApproved";
+import {NewVacationRequestFormData} from "@/types/forms";
+import {addDays, isSameDay, startOfDay} from "date-fns";
 
 export default function NewVacationRequestPage() {
   const router = useRouter();
@@ -24,15 +24,19 @@ export default function NewVacationRequestPage() {
   const endDate = form.watch('endDate');
 
   const isDateDisabled = (date: Date) => {
-    const today = startOfDay(new Date());
-    if (date < today) return true;
-    const isBlocked = blockedDates ? blockedDates.some(blockedDate => isSameDay(date, blockedDate)) : false;
-    return isBlocked;
+    const today = new Date();
+    const tomorrow = addDays(startOfDay(today), 1);
+
+    if (startOfDay(date) < tomorrow) return true;
+
+    return blockedDates ? blockedDates.some(blockedDate => isSameDay(date, blockedDate)) : false;
   };
 
   const isEndDateDisabled = (date: Date) => {
-    const today = startOfDay(new Date());
-    if (date < today) return true;
+    const today = new Date();
+    const tomorrow = addDays(startOfDay(today), 1);
+
+    if (startOfDay(date) < tomorrow) return true;
     if (startDate && date < startDate) return true;
 
     if (startDate) {
