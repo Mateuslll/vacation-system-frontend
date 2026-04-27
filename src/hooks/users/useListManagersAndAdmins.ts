@@ -4,7 +4,7 @@ import { UserListItem } from "@/types/user";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export const useListManagersAndAdmins = () => {
+export const useListManagersAndAdmins = (enabled: boolean = true) => {
   const [managersAndAdmins, setManagersAndAdmins] = useState<UserListItem[]>();
   const [loadingAdmins, setLoadingAdmins] = useState(false);
 
@@ -24,8 +24,9 @@ export const useListManagersAndAdmins = () => {
   }, []);
 
   useEffect(() => {
+    if (!enabled) return;
     fetchManagersAndAdmins();
-  }, [fetchManagersAndAdmins]);
+  }, [enabled, fetchManagersAndAdmins]);
 
   return {
     managersAndAdmins,

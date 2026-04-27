@@ -44,7 +44,7 @@ export default function SignUp() {
           </CardHeader>
 
           <CardContent className="space-y-2">
-            <form onSubmit={onSubmit} className="space-y-2">
+            <form onSubmit={onSubmit} className="space-y-2" autoComplete="off">
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -88,6 +88,7 @@ export default function SignUp() {
                   id="email"
                   type="email"
                   placeholder="joao.silva@exemplo.com"
+                  autoComplete="off"
                   className="h-11 bg-white/50 border-gray-200 focus:border-green-500 focus:ring-green-500"
                   {...form.register("email")}
                 />

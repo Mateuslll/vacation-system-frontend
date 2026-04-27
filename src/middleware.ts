@@ -15,8 +15,14 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
   }
+
+  if (request.nextUrl.pathname.startsWith('/sign-up')) {
+    if (token) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+  }
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/sign-in']
+  matcher: ['/dashboard/:path*', '/sign-in', '/sign-up']
 };

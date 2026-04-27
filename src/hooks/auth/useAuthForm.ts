@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import Cookies from 'js-cookie'
 import { UserStore } from "@/stores/user";
 import { useRouter } from "next/navigation";
+import { buildSessionUser } from "@/lib/auth-user";
 
 export const useAuthForm = () => {
   const setUser = UserStore(state => state.setUser);
@@ -43,12 +44,9 @@ export const useAuthForm = () => {
       Cookies.set("Token", accessToken, { expires: expiresIn / 3600 });
       Cookies.set("RefreshToken", refreshToken, { expires: 7 });
 
-      const newUser = {
-        ...user,
-        roles: permissionsResponse.data.roles,
-      }
-
-      setUser(newUser);
+      setUser(
+        buildSessionUser(user, permissionsResponse.data.roles as string[])
+      );
 
       toast.success("Login realizado com sucesso!");
 

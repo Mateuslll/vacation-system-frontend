@@ -66,59 +66,10 @@ export const useQuickSignIn = () => {
     } finally {
       setLoadingQuickLogin(false)
     }
-  }, []);
-
-  const quickSignInUser = async () => {
-    const userCredentials = {
-      firstName: "User",
-      lastName: "Example",
-      email: "user@taskflow.com",
-      password: "User@123"
-    }
-
-    try {
-      setLoadingQuickLogin(true);
-
-      const response = await apiPublic.post('/auth/register', userCredentials);
-      if (!response) throw new Error('No response from server');
-
-      toast.success('Usuário criado com sucesso!');
-
-      const userLogin = {
-        email: userCredentials.email,
-        password: userCredentials.password
-      }
-
-      await loginDirectly(userLogin);
-
-    } catch (error) {
-      try {
-        handleApiError(error);
-      } catch (apiError) {
-        if (apiError instanceof UnauthorizedError) {
-          toast.error("Credenciais inválidas.");
-        } else if (apiError instanceof BadRequestError) {
-          toast.error(apiError.message);
-        } else if (apiError instanceof NetworkError) {
-          toast.error(apiError.message);
-        } else if (apiError instanceof InternalServerError) {
-          toast.error(apiError.message);
-        } else if (apiError instanceof ApiError) {
-          toast.error(apiError.message);
-        } else {
-          toast.error("Erro inesperado. Tente novamente.");
-        }
-      }
-    } finally {
-      setLoadingQuickLogin(false);
-    }
-  }
-
-
+  }, [loginDirectly]);
 
   return {
     quickSignInAdmin,
-    quickSignInUser,
     loadingQuickLogin
   };
 

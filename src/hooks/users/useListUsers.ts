@@ -4,7 +4,7 @@ import { UserListItem } from "@/types/user";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export const useListUsers = () => {
+export const useListUsers = (enabled: boolean = true) => {
   const [users, setUsers] = useState<UserListItem[] | null>(null);
   const [loadingUser, setLoadingUser] = useState(false);
 
@@ -21,8 +21,9 @@ export const useListUsers = () => {
   }, []);
 
   useEffect(() => {
+    if (!enabled) return;
     fetchUsers();
-  }, [fetchUsers]);
+  }, [enabled, fetchUsers]);
 
   return {
     users,

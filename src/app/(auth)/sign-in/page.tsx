@@ -13,7 +13,7 @@ import { useQuickSignIn } from "@/hooks/auth/useQuickSignIn";
 
 export default function SignIn() {
   const { form, onSubmit, errors, loading } = useAuthForm();
-  const { quickSignInAdmin, quickSignInUser, loadingQuickLogin } = useQuickSignIn();
+  const { quickSignInAdmin, loadingQuickLogin } = useQuickSignIn();
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -142,7 +142,6 @@ export default function SignIn() {
               </div>
             </div>
             <div className="flex flex-col gap-2">
-
               <Button
                 type="button"
                 onClick={quickSignInAdmin}
@@ -151,16 +150,6 @@ export default function SignIn() {
               >
                 <UserCog className="w-4 h-4" />
                 Administrador
-              </Button>
-
-              <Button
-                type="button"
-                onClick={quickSignInUser}
-                disabled={loadingQuickLogin}
-                className="w-full h-11 bg-yellow-500 hover:bg-yellow-800 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                <UserCog className="w-4 h-4" />
-                Funcionario
               </Button>
             </div>
 

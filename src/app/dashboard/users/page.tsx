@@ -4,24 +4,35 @@ import { UsersTable } from "@/components/UsersTable";
 import { CreateUserModal } from "@/components/CreateUserModal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Users, Search, Filter } from "lucide-react";
+import { Users, Search, Filter, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useListUsers } from "@/hooks/users/useListUsers";
 import { useListManagersAndAdmins } from "@/hooks/users/useListManagersAndAdmins";
 import { useListUserByCollaborators } from "@/hooks/users/useListUserByCollaborators";
 import { UserStore } from "@/stores/user";
 import { useState, useEffect } from "react";
+import { canManageUsers } from "@/lib/auth-user";
 
-export default function Dashboard() {
+export default function UsersListPage() {
   const router = useRouter();
-  const { users, fetchUsers } = useListUsers();
-  const { managersAndAdmins, loadingAdmins } = useListManagersAndAdmins();
+  const currentUser = UserStore((state) => state.user);
+  const canAccess = canManageUsers(currentUser?.roles);
+
+  const { users, fetchUsers } = useListUsers(canAccess);
+  const { managersAndAdmins, loadingAdmins } = useListManagersAndAdmins(canAccess);
   const { usersFiltered, loading: loadingFiltered, fetchUsersByCollaborators } = useListUserByCollaborators();
-  const currentUser = UserStore(state => state.user);
 
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
   const [displayUsers, setDisplayUsers] = useState(users);
+
+  useEffect(() => {
+    if (currentUser && !canManageUsers(currentUser.roles)) {
+      router.replace("/dashboard/vacation-requests");
+    }
+  }, [currentUser, router]);
 
   useEffect(() => {
     if (selectedFilter === "all") {
@@ -49,10 +60,32 @@ export default function Dashboard() {
     router.push(`/dashboard/users/${userId}`);
   };
 
+  if (currentUser == null) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center p-8 text-muted-foreground">
+        A carregar a sessão…
+      </div>
+    );
+  }
+
+  if (!canAccess) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center p-8 text-muted-foreground">
+        A redirecionar…
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center">
+        <div className="container flex h-14 items-center gap-2">
+          <Button variant="ghost" size="sm" asChild className="shrink-0">
+            <Link href="/dashboard">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Link>
+          </Button>
           <div className="mr-4 flex">
             <Users className="mr-2 h-6 w-6" />
             <span className="hidden font-bold sm:inline-block">

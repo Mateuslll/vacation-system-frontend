@@ -15,6 +15,8 @@ import { useChangeManager } from "@/hooks/users/useChangeManager";
 import { UserStore } from "@/stores/user";
 import { UpdateRolesModal } from "@/components/UpdateRolesModal";
 import { toast } from "sonner";
+import { canManageUsers } from "@/lib/auth-user";
+import { useRouter } from "next/navigation";
 
 interface UserDetailPageProps {
   params: Promise<{
@@ -23,17 +25,25 @@ interface UserDetailPageProps {
 }
 
 export default function UserDetailPage({ params }: UserDetailPageProps) {
+  const router = useRouter();
   const { user, loadingUser, error, fetchUser } = useGetUser(params);
   const { deactivateUser, activateUser, isToggling } = useToggleUser();
-  const { managersAndAdmins, loadingAdmins } = useListManagersAndAdmins();
+  const currentUser = UserStore((state) => state.user);
+  const canAccess = canManageUsers(currentUser?.roles);
+  const { managersAndAdmins, loadingAdmins } = useListManagersAndAdmins(canAccess);
   const { changeManager, loading: loadingChangeManager } = useChangeManager();
-  const currentUser = UserStore(state => state.user);
   const [isUpdateRolesModalOpen, setIsUpdateRolesModalOpen] = useState(false);
   const [selectedManager, setSelectedManager] = useState<string>("");
 
   const canToggleUsers = currentUser?.roles?.some(role =>
     role === "ADMIN" || role === "MANAGER"
   ) || false;
+
+  useEffect(() => {
+    if (currentUser && !canManageUsers(currentUser.roles)) {
+      router.replace("/dashboard/vacation-requests");
+    }
+  }, [currentUser, router]);
 
   useEffect(() => {
     if (!user) return;
@@ -54,6 +64,22 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
       /* mensagem já exibida em useChangeManager */
     }
   };
+
+  if (currentUser == null) {
+    return (
+      <div className="container mx-auto flex flex-1 items-center justify-center py-16 text-muted-foreground">
+        A carregar a sessão…
+      </div>
+    );
+  }
+
+  if (!canAccess) {
+    return (
+      <div className="container mx-auto flex flex-1 items-center justify-center py-16 text-muted-foreground">
+        A redirecionar…
+      </div>
+    );
+  }
 
   if (loadingUser) {
     return (
@@ -102,7 +128,7 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
     <div className="container mx-auto py-8">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Link href="/dashboard">
+          <Link href="/dashboard/users">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar

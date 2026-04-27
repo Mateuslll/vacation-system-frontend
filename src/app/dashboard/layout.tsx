@@ -17,7 +17,7 @@ const navigationItems = [
     name: "Dashboard",
     href: "/dashboard",
     icon: Home,
-    roles: ["MANAGER", "ADMIN"],
+    roles: ["USER", "MANAGER", "ADMIN"],
   },
   {
     name: "Usuários",

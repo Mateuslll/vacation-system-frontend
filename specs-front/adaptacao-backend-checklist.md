@@ -25,6 +25,15 @@ Marcar `[x]` conforme for implementando. Referência técnica: [api-contract-and
 - [ ] Revisar `README.md` do frontend com variáveis de ambiente e link para `specs-front`.
 - [ ] (Opcional) testes e2e ou smoke Playwright que chamem a API local com os mesmos fluxos do `smoke_api.py` (23 passos reduzidos ao subconjunto crítico).
 
+## Prioridade P4 — UX dashboard / auth / navegação
+
+- [x] Login rápido: remover atalho **Funcionário** (`useQuickSignIn`, `sign-in`).
+- [x] Dashboard: métricas de férias (pendentes / aprovadas / rejeitadas) a partir de `GET /vacation-requests` (gestão) ou `GET /vacation-requests/my` (colaborador); total de utilizadores só para ADMIN/MANAGER; cartão **Configurações** removido (sem rota).
+- [x] Sidebar: nome e email reais após login/registo (`buildSessionUser` + `GET /auth/me` no registo); entrada **Dashboard** também para `USER`.
+- [x] `/dashboard/users`: botão **Voltar** para o dashboard; colaborador `USER` redirecionado e sem chamadas a `/users/managers-and-admins`.
+- [x] Registo: `autoComplete="off"` no formulário/email para evitar pré-preenchimento pelo browser; `sign-up` no middleware com token → dashboard.
+- [x] Backend: `AccessDeniedException` → **403** ProblemDetail (evita 500 em endpoints `@PreAuthorize` para `USER`).
+
 ## Ficheiros já identificados
 
 | Área | Ficheiros |
@@ -32,4 +41,4 @@ Marcar `[x]` conforme for implementando. Referência técnica: [api-contract-and
 | HTTP / erros | `src/lib/api.ts`, `src/lib/api-errors.ts` |
 | Férias | `src/hooks/vacation/*`, `src/components/VacationRequestsTable.tsx`, `src/app/dashboard/vacation-requests/**` |
 | Utilizadores | `src/hooks/users/*`, `src/components/UsersTable.tsx`, `src/app/dashboard/users/**` |
-| Auth | `src/hooks/auth/*`, `src/app/(auth)/*`, `src/middleware.ts` |
+| Auth | `src/hooks/auth/*`, `src/lib/auth-user.ts`, `src/app/(auth)/*`, `src/middleware.ts` |

@@ -1,10 +1,11 @@
 import { apiPrivate } from "@/lib/api";
 import { getErrorMessage } from "@/lib/api-errors";
+import { VacationRequest } from "@/types/vacation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export const useMyVacationRequests = () => {
-  const [myVacationsRequests, setMyVacationsRequests] = useState();
+  const [myVacationsRequests, setMyVacationsRequests] = useState<VacationRequest[] | undefined>();
   const [loadingMyVacationRequests, setLoadingMyVacationRequests] = useState(false);
 
   const fetchMyVacationRequests = async () => {

@@ -1,4 +1,4 @@
-import { apiPublic } from "@/lib/api"
+import { apiPrivate, apiPublic } from "@/lib/api"
 import { ApiError, BadRequestError, handleApiError, NetworkError, UnauthorizedError } from "@/lib/api-errors"
 import { signUpSchema } from "@/lib/validations/schemas"
 import { SignUpFormData } from "@/types/forms"
@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import Cookies from 'js-cookie'
 import { UserStore } from "@/stores/user";
 import { useRouter } from "next/navigation";
+import { buildSessionUser } from "@/lib/auth-user";
 
 
 export const useRegisterUser = () => {
@@ -38,7 +39,14 @@ export const useRegisterUser = () => {
       Cookies.set("Token", accessToken, { expires: expiresIn / 3600 });
       Cookies.set("RefreshToken", refreshToken, { expires: 7 });
 
-      setUser(user);
+      const permissionsResponse = await apiPrivate.get<{ roles: string[] }>("auth/me", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!permissionsResponse) throw new Error("No response from server");
+
+      setUser(
+        buildSessionUser(user, permissionsResponse.data.roles as string[])
+      );
 
       toast.success("Usuário criado com sucesso!");
 
