@@ -1,5 +1,5 @@
 import { apiPrivate } from "@/lib/api";
-import { handleApiError, NotFoundError } from "@/lib/api-errors";
+import { getErrorMessage } from "@/lib/api-errors";
 import { VacationRequest } from "@/types/vacation";
 import { useCallback, useEffect, useState } from "react";
 
@@ -8,21 +8,14 @@ export const useVacationRequestDetails = (params: Promise<{ id: string }>) => {
   const [loadingVacation, setLoadingVacation] = useState(false);
   const [errorVacation, setErrorVacation] = useState<string | null>(null);
 
-
   const fetchRequestVacation = useCallback(async (vacationId: string) => {
     try {
       setLoadingVacation(true);
+      setErrorVacation(null);
       const response = await apiPrivate.get<VacationRequest>(`/vacation-requests/${vacationId}`);
       setVacationRequest(response.data);
     } catch (error) {
-      try {
-        handleApiError(error);
-      } catch (apiError) {
-        if (apiError instanceof NotFoundError) {
-          setErrorVacation("Solicitação de férias não encontrada.");
-        }
-      }
-
+      setErrorVacation(getErrorMessage(error));
     } finally {
       setLoadingVacation(false);
     }
@@ -34,19 +27,18 @@ export const useVacationRequestDetails = (params: Promise<{ id: string }>) => {
         const resolvedParams = await params;
         await fetchRequestVacation(resolvedParams.id);
       } catch (err) {
-        console.error("Error resolving params:", err);
-        setErrorVacation("Erro ao carregar parâmetros");
+        setErrorVacation(getErrorMessage(err));
         setLoadingVacation(false);
       }
     };
 
     loadVacation();
-  }, [params]);
+  }, [params, fetchRequestVacation]);
 
   return {
     vacationRequest,
     loadingVacation,
     errorVacation,
-    setVacationRequest
+    setVacationRequest,
   };
-}
+};

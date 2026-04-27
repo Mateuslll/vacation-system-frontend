@@ -1,5 +1,11 @@
 import { apiPrivate } from "@/lib/api";
-import { BadRequestError, ConflictError, ForbiddenError, handleApiError, NotFoundError } from "@/lib/api-errors";
+import {
+  BadRequestError,
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  parseApiFailure,
+} from "@/lib/api-errors";
 import { rejectVacationSchema } from "@/lib/validations/schemas";
 import { RejectVacationFormData } from "@/types/forms";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -15,13 +21,10 @@ export const useActionsVacation = () => {
     resolver: yupResolver(rejectVacationSchema),
     defaultValues: {
       rejectionReason: "",
-    }
+    },
   });
 
-
-
   const approveVacation = async (id: string) => {
-
     try {
       setLoadingActionsVacation(true);
 
@@ -30,25 +33,22 @@ export const useActionsVacation = () => {
       toast.success("Solicitação aprovada com sucesso!");
 
       return response.data;
-
     } catch (error) {
-      try {
-        handleApiError(error);
-      } catch (apiError) {
-        if (apiError instanceof ForbiddenError) {
-          toast.error("Você não tem permissão para aprovar esta solicitação.");
-        } else if (apiError instanceof NotFoundError) {
-          toast.error("Solicitação de férias não encontrada.");
-        } else if (apiError instanceof ConflictError) {
-          toast.error("Solicitação já foi processada.");
-        }
+      const apiError = parseApiFailure(error);
+      if (apiError instanceof ForbiddenError) {
+        toast.error(apiError.message);
+      } else if (apiError instanceof NotFoundError) {
+        toast.error(apiError.message);
+      } else if (apiError instanceof ConflictError) {
+        toast.error(apiError.message);
+      } else {
+        toast.error(apiError.message);
       }
-      throw error;
+      throw apiError;
     } finally {
       setLoadingActionsVacation(false);
     }
-  }
-
+  };
 
   const rejectVacation = async (id: string, data: RejectVacationFormData) => {
     try {
@@ -58,27 +58,24 @@ export const useActionsVacation = () => {
 
       toast.success("Solicitação rejeitada com sucesso!");
       return response.data;
-
     } catch (error) {
-      try {
-        handleApiError(error);
-      } catch (apiError) {
-        if (apiError instanceof BadRequestError) {
-          form.setError("rejectionReason", { message: "Motivo de rejeição é obrigatório." });
-        }
-        else if (apiError instanceof ForbiddenError) {
-          toast.error("Você não tem permissão para rejeitar esta solicitação.");
-        } else if (apiError instanceof NotFoundError) {
-          toast.error("Solicitação de férias ou gerente não encontrada.");
-        } else if (apiError instanceof ConflictError) {
-          toast.error("Solicitação já foi processada.");
-        }
+      const apiError = parseApiFailure(error);
+      if (apiError instanceof BadRequestError) {
+        form.setError("rejectionReason", { message: apiError.message });
+      } else if (apiError instanceof ForbiddenError) {
+        toast.error(apiError.message);
+      } else if (apiError instanceof NotFoundError) {
+        toast.error(apiError.message);
+      } else if (apiError instanceof ConflictError) {
+        toast.error(apiError.message);
+      } else {
+        toast.error(apiError.message);
       }
-      throw error;
+      throw apiError;
     } finally {
       setLoadingActionsVacation(false);
     }
-  }
+  };
 
   const cancelVacation = async (id: string) => {
     try {
@@ -88,27 +85,27 @@ export const useActionsVacation = () => {
       toast.success("Solicitação cancelada com sucesso!");
       return response.data;
     } catch (error) {
-      try {
-        handleApiError(error);
-      } catch (apiError) {
-        if (apiError instanceof ForbiddenError) {
-          toast.error("Você não tem permissão para cancelar esta solicitação.");
-        } else if (apiError instanceof NotFoundError) {
-          toast.error("Solicitação de férias não encontrada.");
-        } else if (apiError instanceof ConflictError) {
-          toast.error("Solicitação já foi processada ou cancelada.");
-        }
+      const apiError = parseApiFailure(error);
+      if (apiError instanceof ForbiddenError) {
+        toast.error(apiError.message);
+      } else if (apiError instanceof NotFoundError) {
+        toast.error(apiError.message);
+      } else if (apiError instanceof ConflictError) {
+        toast.error(apiError.message);
+      } else {
+        toast.error(apiError.message);
       }
+      throw apiError;
     } finally {
       setLoadingActionsVacation(false);
     }
-  }
+  };
 
   return {
     form,
     approveVacation,
     rejectVacation,
     cancelVacation,
-    loadingActionsVacation
-  }
+    loadingActionsVacation,
+  };
 };

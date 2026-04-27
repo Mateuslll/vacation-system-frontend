@@ -1,5 +1,5 @@
 import { apiPrivate, apiPublic } from "@/lib/api";
-import { handleApiError, UnauthorizedError, BadRequestError, NetworkError } from "@/lib/api-errors";
+import { ApiError, handleApiError, UnauthorizedError, BadRequestError, NetworkError } from "@/lib/api-errors";
 import { signInSchema } from "@/lib/validations/schemas/sign-in.schema";
 import { SignInFormData } from "@/types/forms";
 import { SignInResponse } from "@/types/signIn";
@@ -63,9 +63,11 @@ export const useAuthForm = () => {
         if (apiError instanceof UnauthorizedError) {
           form.setError("password", { message: "Credenciais inválidas." });
         } else if (apiError instanceof BadRequestError) {
-          form.setError("email", { message: "Dados inválidos. Verifique os campos." });
+          form.setError("email", { message: apiError.message });
         } else if (apiError instanceof NetworkError) {
-          toast.error("Erro de conexão. Verifique sua internet.");
+          toast.error(apiError.message);
+        } else if (apiError instanceof ApiError) {
+          toast.error(apiError.message);
         } else {
           toast.error("Erro inesperado. Tente novamente.");
         }

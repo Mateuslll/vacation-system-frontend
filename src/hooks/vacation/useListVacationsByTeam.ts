@@ -1,6 +1,8 @@
 import { apiPrivate } from "@/lib/api";
+import { getErrorMessage } from "@/lib/api-errors";
 import { VacationRequest } from "@/types/vacation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export const useListVacationsByTeam = () => {
   const [teamVacations, setTeamVacations] = useState<VacationRequest[] | null>(null);
@@ -14,18 +16,16 @@ export const useListVacationsByTeam = () => {
       if (!response) throw new Error("No response from server");
 
       setTeamVacations(response.data);
-
     } catch (error) {
-      console.error("Error fetching team vacations:", error);
+      toast.error(getErrorMessage(error));
     } finally {
       setLoadingTeamVacations(false);
     }
-  }
+  };
 
   return {
     teamVacations,
     loadingTeamVacations,
-    fetchTeamVacations
-  }
-
-}
+    fetchTeamVacations,
+  };
+};

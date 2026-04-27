@@ -1,5 +1,13 @@
 import { apiPublic } from "@/lib/api";
-import { BadRequestError, ConflictError, handleApiError, InternalServerError, NetworkError, UnauthorizedError } from "@/lib/api-errors";
+import {
+  ApiError,
+  BadRequestError,
+  ConflictError,
+  handleApiError,
+  InternalServerError,
+  NetworkError,
+  UnauthorizedError,
+} from "@/lib/api-errors";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useAuthForm } from "./useAuthForm";
@@ -42,12 +50,14 @@ export const useQuickSignIn = () => {
         } else if (apiError instanceof ConflictError) {
           await loginDirectly(adminLogin);
         } else if (apiError instanceof BadRequestError) {
-          toast.error("Dados inválidos. Verifique os campos.");
+          toast.error(apiError.message);
         } else if (apiError instanceof NetworkError) {
-          toast.error("Erro de conexão. Verifique sua internet.");
+          toast.error(apiError.message);
         }
         else if (apiError instanceof InternalServerError) {
-          toast.error("Erro interno no servidor. Tente novamente mais tarde.")
+          toast.error(apiError.message);
+        } else if (apiError instanceof ApiError) {
+          toast.error(apiError.message);
         } else {
           toast.error("Erro inesperado. Tente novamente.");
         }
@@ -88,11 +98,13 @@ export const useQuickSignIn = () => {
         if (apiError instanceof UnauthorizedError) {
           toast.error("Credenciais inválidas.");
         } else if (apiError instanceof BadRequestError) {
-          toast.error("Dados inválidos. Verifique os campos.");
+          toast.error(apiError.message);
         } else if (apiError instanceof NetworkError) {
-          toast.error("Erro de conexão. Verifique sua internet.");
+          toast.error(apiError.message);
         } else if (apiError instanceof InternalServerError) {
-          toast.error("Erro interno no servidor. Tente novamente mais tarde.");
+          toast.error(apiError.message);
+        } else if (apiError instanceof ApiError) {
+          toast.error(apiError.message);
         } else {
           toast.error("Erro inesperado. Tente novamente.");
         }

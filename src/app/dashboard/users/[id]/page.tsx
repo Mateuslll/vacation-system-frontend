@@ -14,6 +14,8 @@ import { useListManagersAndAdmins } from "@/hooks/users/useListManagersAndAdmins
 import { useChangeManager } from "@/hooks/users/useChangeManager";
 import { UserStore } from "@/stores/user";
 import { UpdateRolesModal } from "@/components/UpdateRolesModal";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/api-errors";
 
 interface UserDetailPageProps {
   params: Promise<{
@@ -53,7 +55,7 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
         await fetchUser(user.id);
       }
     } catch (error) {
-      console.error("Erro ao atualizar gerente:", error);
+      toast.error(getErrorMessage(error));
     }
   };
 

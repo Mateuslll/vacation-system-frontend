@@ -1,5 +1,5 @@
 import { apiPublic } from "@/lib/api"
-import { BadRequestError, handleApiError, NetworkError, UnauthorizedError } from "@/lib/api-errors"
+import { ApiError, BadRequestError, handleApiError, NetworkError, UnauthorizedError } from "@/lib/api-errors"
 import { signUpSchema } from "@/lib/validations/schemas"
 import { SignUpFormData } from "@/types/forms"
 import { yupResolver } from "@hookform/resolvers/yup"
@@ -49,11 +49,15 @@ export const useRegisterUser = () => {
         handleApiError(error);
       } catch (apiError) {
         if (apiError instanceof BadRequestError) {
-          form.setError("email", { message: "E-mail já cadastrado ou dados inválidos." });
+          form.setError("email", { message: apiError.message });
+        } else if (apiError instanceof UnauthorizedError) {
+          toast.error(apiError.message);
         } else if (apiError instanceof NetworkError) {
-          toast.error("Erro de conexão. Verifique sua internet.");
+          toast.error(apiError.message);
+        } else if (apiError instanceof ApiError) {
+          toast.error(apiError.message);
         } else {
-          toast.error("Erro ao criar usuário. Tente novamente.");
+          toast.error("Erro inesperado. Tente novamente.");
         }
       }
     }

@@ -2,6 +2,7 @@ export interface VacationRequest {
   id: string;
   userId: string;
   userName: string;
+  userRole?: string | null;
   startDate: string;
   endDate: string;
   days: number;
@@ -25,6 +26,7 @@ export interface VacationRequestListItem {
   id: string;
   userId: string;
   userName: string;
+  userRole?: string | null;
   userEmail: string;
   department: string;
   startDate: string;

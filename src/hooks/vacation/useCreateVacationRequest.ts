@@ -1,5 +1,12 @@
 import { apiPrivate } from "@/lib/api";
-import { BadRequestError, ConflictError, handleApiError, NotFoundError, UnprocessableEntityError } from "@/lib/api-errors";
+import {
+  BadRequestError,
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  parseApiFailure,
+  UnprocessableEntityError,
+} from "@/lib/api-errors";
 import { newVacationRequestSchema } from "@/lib/validations/schemas";
 import { NewVacationRequestFormData } from "@/types/forms";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -7,7 +14,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-export const useCreateVacationRequest = () => {
+export type CreateVacationRequestOptions = {
+  onSuccess?: () => void;
+};
+
+export const useCreateVacationRequest = (options?: CreateVacationRequestOptions) => {
   const [loading, setLoading] = useState(false);
 
   const form = useForm<NewVacationRequestFormData>({
@@ -17,20 +28,20 @@ export const useCreateVacationRequest = () => {
       startDate: undefined,
       endDate: undefined,
       reason: "",
-    }
+    },
   });
 
   const onSubmit = async (data: NewVacationRequestFormData) => {
     try {
       setLoading(true);
-      
+
       const formatDate = (date: Date): string => {
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
         return `${year}-${month}-${day}`;
       };
-      
+
       const payload = {
         startDate: formatDate(data.startDate),
         endDate: formatDate(data.endDate),
@@ -43,23 +54,24 @@ export const useCreateVacationRequest = () => {
 
       toast.success("Solicitação de férias criada com sucesso!");
       form.reset();
+      options?.onSuccess?.();
       return response.data;
-
     } catch (error) {
-      console.error("Error creating vacation request:", error);
-      try {
-        handleApiError(error);
-      } catch (apiError) {
-        if (apiError instanceof BadRequestError) {
-          toast.error("Dados inválidos. Verifique os campos.");
-        } else if (apiError instanceof NotFoundError) {
-          toast.error("Recurso não encontrado.");
-        } else if (apiError instanceof ConflictError) {
-          toast.error("Sobreposição de período com outra solicitação.");
-        } else if (apiError instanceof UnprocessableEntityError) {
-          toast.error("Erro de validação. Verifique periodo das datas.");
-        }
+      const apiError = parseApiFailure(error);
+      if (apiError instanceof ForbiddenError) {
+        toast.error(apiError.message);
+      } else if (apiError instanceof BadRequestError) {
+        toast.error(apiError.message);
+      } else if (apiError instanceof NotFoundError) {
+        toast.error(apiError.message);
+      } else if (apiError instanceof ConflictError) {
+        toast.error(apiError.message);
+      } else if (apiError instanceof UnprocessableEntityError) {
+        toast.error(apiError.message);
+      } else {
+        toast.error(apiError.message);
       }
+      throw apiError;
     } finally {
       setLoading(false);
     }

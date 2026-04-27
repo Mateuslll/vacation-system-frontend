@@ -12,12 +12,13 @@ import Link from "next/link";
 import {DatePicker} from "@/components/DatePicker";
 import {useCreateVacationRequest} from "@/hooks/vacation/useCreateVacationRequest";
 import {useListVacationApproved} from "@/hooks/vacation/useListVacationApproved";
-import {NewVacationRequestFormData} from "@/types/forms";
 import {addDays, isSameDay, startOfDay} from "date-fns";
 
 export default function NewVacationRequestPage() {
   const router = useRouter();
-  const { form, onSubmit, loading, errors } = useCreateVacationRequest();
+  const { form, onSubmit, loading, errors } = useCreateVacationRequest({
+    onSuccess: () => router.push("/dashboard/vacation-requests"),
+  });
   const { blockedDates } = useListVacationApproved();
 
   const startDate = form.watch('startDate');
@@ -49,16 +50,6 @@ export default function NewVacationRequestPage() {
 
     return blockedDates ? blockedDates.some(blockedDate => isSameDay(date, blockedDate)) : false;
   };
-
-
-  const handleFormSubmit = form.handleSubmit(async (data: NewVacationRequestFormData) => {
-    try {
-      await onSubmit();
-      router.push("/dashboard/vacation-requests");
-    } catch (error) {
-      console.error("Error submitting vacation request:", error);
-    }
-  });
 
 
   return (
@@ -93,7 +84,7 @@ export default function NewVacationRequestPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleFormSubmit} className="space-y-6">
+              <form onSubmit={onSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="startDate">Data de Início *</Label>

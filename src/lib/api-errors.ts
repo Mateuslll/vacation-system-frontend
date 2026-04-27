@@ -1,103 +1,153 @@
-import { AxiosError } from 'axios';
+import { AxiosError } from "axios";
+import type { ProblemDetail } from "@/types/problem-detail";
 
 export class ApiError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
   }
 }
 
 export class BadRequestError extends ApiError {
-  constructor(message: string = 'Bad Request') {
+  constructor(message: string = "Pedido inválido") {
     super(message);
-    this.name = 'BadRequestError';
+    this.name = "BadRequestError";
   }
 }
 
 export class UnprocessableEntityError extends ApiError {
-  constructor(message: string = 'Unprocessable Entity') {
+  constructor(message: string = "Dados não processáveis") {
     super(message);
-    this.name = 'UnprocessableEntityError';
+    this.name = "UnprocessableEntityError";
   }
 }
 
 export class NotFoundError extends ApiError {
-  constructor(message: string = 'Resource not found') {
+  constructor(message: string = "Recurso não encontrado") {
     super(message);
-    this.name = 'NotFoundError';
+    this.name = "NotFoundError";
   }
 }
 
 export class ForbiddenError extends ApiError {
-  constructor(message: string = 'Access denied') {
+  constructor(message: string = "Acesso negado") {
     super(message);
-    this.name = 'ForbiddenError';
+    this.name = "ForbiddenError";
   }
 }
 
 export class ConflictError extends ApiError {
-  constructor(message: string = 'Resource already exists') {
+  constructor(message: string = "Conflito") {
     super(message);
-    this.name = 'ConflictError';
+    this.name = "ConflictError";
   }
 }
 
 export class UnauthorizedError extends ApiError {
-  constructor(message: string = 'Authentication required') {
+  constructor(message: string = "Autenticação necessária") {
     super(message);
-    this.name = 'UnauthorizedError';
+    this.name = "UnauthorizedError";
   }
 }
 
 export class InternalServerError extends ApiError {
-  constructor(message: string = 'Internal Server Error') {
+  constructor(message: string = "Erro interno do servidor") {
     super(message);
-    this.name = 'InternalServerError';
+    this.name = "InternalServerError";
   }
 }
-
 
 export class NetworkError extends ApiError {
-  constructor(message: string = 'Server unavailable') {
+  constructor(message: string = "Servidor indisponível") {
     super(message);
-    this.name = 'NetworkError';
+    this.name = "NetworkError";
   }
 }
 
+function isProblemDetailShape(data: unknown): data is ProblemDetail {
+  return typeof data === "object" && data !== null;
+}
 
-export function handleApiError(error: unknown): never {
+/**
+ * Extrai mensagem legível de ProblemDetail Spring ou payloads legados com `message`.
+ */
+export function extractProblemDetailMessage(data: unknown): string {
+  if (!data || typeof data !== "object") {
+    return "Erro na API";
+  }
+  const d = data as Record<string, unknown>;
+  if (typeof d.detail === "string" && d.detail.trim()) {
+    return d.detail.trim();
+  }
+  if (typeof d.message === "string" && d.message.trim()) {
+    return d.message.trim();
+  }
+  if (typeof d.title === "string" && d.title.trim()) {
+    return d.title.trim();
+  }
+  if (Array.isArray(d.errors) && d.errors.length > 0) {
+    const first = d.errors[0] as Record<string, unknown> | string;
+    if (typeof first === "string" && first.trim()) {
+      return first.trim();
+    }
+    if (first && typeof first === "object" && typeof first.defaultMessage === "string") {
+      return String(first.defaultMessage);
+    }
+  }
+  return "Erro na API";
+}
+
+function isNormalizedApiError(error: unknown): error is ApiError {
+  return error instanceof ApiError;
+}
+
+/**
+ * Converte Axios ou erro já normalizado numa instância de {@link ApiError} (subclasses).
+ */
+export function parseApiFailure(error: unknown): Error {
+  if (isNormalizedApiError(error)) {
+    return error;
+  }
+
   if (error instanceof AxiosError) {
-
     if (!error.response) {
-      if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
-        throw new NetworkError('Unable to connect to the server');
+      if (error.code === "ERR_NETWORK" || error.code === "ERR_CONNECTION_REFUSED") {
+        return new NetworkError("Não foi possível ligar ao servidor.");
       }
-      throw new NetworkError('Network error');
+      return new NetworkError("Erro de rede.");
     }
 
     const { status, data } = error.response;
-    const message = data?.message || 'API Error';
+    const message = extractProblemDetailMessage(data);
 
     switch (status) {
       case 400:
-        throw new BadRequestError(message);
+        return new BadRequestError(message);
       case 401:
-        throw new UnauthorizedError(message);
+        return new UnauthorizedError(message);
       case 403:
-        throw new ForbiddenError(message);
+        return new ForbiddenError(message);
       case 404:
-        throw new NotFoundError(message);
+        return new NotFoundError(message);
       case 409:
-        throw new ConflictError(message);
+        return new ConflictError(message);
       case 422:
-        throw new UnprocessableEntityError(message);
+        return new UnprocessableEntityError(message);
       case 500:
-        throw new InternalServerError(message);
+        return new InternalServerError(message);
       default:
-        throw new ApiError(`HTTP ${status}: ${message}`);
+        return new ApiError(`HTTP ${status}: ${message}`);
     }
   }
 
-  const message = error instanceof Error ? error.message : 'Unknown error';
-  throw new ApiError(message);
+  const message = error instanceof Error ? error.message : "Erro desconhecido";
+  return new ApiError(message);
+}
+
+export function handleApiError(error: unknown): never {
+  throw parseApiFailure(error);
+}
+
+export function getErrorMessage(error: unknown): string {
+  return parseApiFailure(error).message;
 }

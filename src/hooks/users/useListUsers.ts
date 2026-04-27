@@ -1,27 +1,24 @@
 import { apiPrivate } from "@/lib/api";
+import { getErrorMessage } from "@/lib/api-errors";
 import { UserListItem } from "@/types/user";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export const useListUsers = () => {
   const [users, setUsers] = useState<UserListItem[] | null>(null);
   const [loadingUser, setLoadingUser] = useState(false);
 
-
   const fetchUsers = useCallback(async () => {
-
     try {
       setLoadingUser(true);
       const response = await apiPrivate.get<UserListItem[]>("/users");
       setUsers(response.data);
-
     } catch (error) {
-      console.error("Error fetching users:", error);
+      toast.error(getErrorMessage(error));
     } finally {
       setLoadingUser(false);
     }
   }, []);
-
-
 
   useEffect(() => {
     fetchUsers();
@@ -30,6 +27,6 @@ export const useListUsers = () => {
   return {
     users,
     loadingUser,
-    fetchUsers
+    fetchUsers,
   };
-}
+};

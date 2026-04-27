@@ -32,29 +32,38 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
 
 
   const handleApprove = async () => {
-    if (vacationRequest) {
+    if (!vacationRequest) return;
+    try {
       const updatedVacation = await approveVacation(vacationRequest.id);
       setVacationRequest(updatedVacation);
+    } catch {
+      /* erro já exibido em useActionsVacation */
     }
   };
 
   const handleReject = async (data: RejectVacationFormData) => {
-    if (vacationRequest) {
+    if (!vacationRequest) return;
+    try {
       const updatedVacation = await rejectVacation(vacationRequest.id, data);
       if (updatedVacation) {
         setVacationRequest(updatedVacation);
         setIsRejectModalOpen(false);
         form.reset();
       }
+    } catch {
+      /* erro já exibido em useActionsVacation */
     }
   };
 
   const handleCancel = async () => {
-    if (vacationRequest) {
+    if (!vacationRequest) return;
+    try {
       const updatedVacation = await cancelVacation(vacationRequest.id);
       if (updatedVacation) {
         setVacationRequest(updatedVacation);
       }
+    } catch {
+      /* erro já exibido em useActionsVacation */
     }
   };
 

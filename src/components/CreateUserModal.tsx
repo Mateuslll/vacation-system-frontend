@@ -15,6 +15,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Eye, EyeOff, UserPlus, Plus } from "lucide-react";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/api-errors";
 
 interface CreateUserModalProps {
   trigger?: React.ReactNode;
@@ -35,7 +37,7 @@ export function CreateUserModal({ trigger, onSuccess }: CreateUserModalProps) {
         onSuccess?.();
       }
     } catch (error) {
-      console.error("Erro ao criar usuário:", error);
+      toast.error(getErrorMessage(error));
     }
   };
 

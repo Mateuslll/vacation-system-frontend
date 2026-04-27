@@ -1,7 +1,7 @@
 import { apiPrivate } from "@/lib/api";
+import { getErrorMessage } from "@/lib/api-errors";
 import { VacationRequest } from "@/types/vacation";
 import { useState, useEffect } from "react";
-import { handleApiError } from "@/lib/api-errors";
 
 export const useGetVacationRequests = (shouldFetch: boolean = false) => {
   const [vacationRequests, setVacationRequests] = useState<VacationRequest[]>([]);
@@ -19,8 +19,7 @@ export const useGetVacationRequests = (shouldFetch: boolean = false) => {
 
       setVacationRequests(response.data);
     } catch (error) {
-      console.error("Error fetching vacation requests:", error);
-      handleApiError(error);
+      setError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -36,6 +35,6 @@ export const useGetVacationRequests = (shouldFetch: boolean = false) => {
     vacationRequests,
     loading,
     error,
-    refetch: fetchVacationRequests
+    refetch: fetchVacationRequests,
   };
 };

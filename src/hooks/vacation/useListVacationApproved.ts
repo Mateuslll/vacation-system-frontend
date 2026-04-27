@@ -2,12 +2,13 @@ import { VacationRequestListItem } from "@/types/vacation";
 import { useEffect, useState } from "react";
 import { parseISO, eachDayOfInterval } from "date-fns";
 import { apiPrivate } from "@/lib/api";
+import { getErrorMessage } from "@/lib/api-errors";
+import { toast } from "sonner";
 
 export const useListVacationApproved = () => {
-  const [vacationApprovedList, setVacationApprovedList] = useState<VacationRequestListItem[]>()
-  const [loadingListVacationApproved, setLoadingListVacationApproved] = useState(false)
-  const [blockedDates, setBlockedDates] = useState<Date[]>()
-
+  const [vacationApprovedList, setVacationApprovedList] = useState<VacationRequestListItem[]>();
+  const [loadingListVacationApproved, setLoadingListVacationApproved] = useState(false);
+  const [blockedDates, setBlockedDates] = useState<Date[]>();
 
   const fetchVacationApproved = async () => {
     try {
@@ -16,33 +17,32 @@ export const useListVacationApproved = () => {
 
       if (!response) throw new Error("No response from server");
 
-      response.data.forEach(vacation => {
-        const startDate = parseISO(vacation.startDate)
-        const endDate = parseISO(vacation.endDate)
+      response.data.forEach((vacation) => {
+        const startDate = parseISO(vacation.startDate);
+        const endDate = parseISO(vacation.endDate);
 
         const datesInRange = eachDayOfInterval({
           start: startDate,
-          end: endDate
-        })
-        setBlockedDates(prevDates => [...(prevDates || []), ...datesInRange])
-      })
+          end: endDate,
+        });
+        setBlockedDates((prevDates) => [...(prevDates || []), ...datesInRange]);
+      });
 
       setVacationApprovedList(response.data);
     } catch (error) {
-      console.error("Error fetching approved vacations:", error);
+      toast.error(getErrorMessage(error));
     } finally {
       setLoadingListVacationApproved(false);
     }
   };
 
   useEffect(() => {
-    fetchVacationApproved()
-  }, [])
-
+    fetchVacationApproved();
+  }, []);
 
   return {
     loadingListVacationApproved,
     vacationApprovedList,
-    blockedDates
-  }
-}
+    blockedDates,
+  };
+};

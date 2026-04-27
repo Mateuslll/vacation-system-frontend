@@ -1,4 +1,5 @@
 import { apiPrivate } from "@/lib/api";
+import { getErrorMessage } from "@/lib/api-errors";
 import { UserListItem } from "@/types/user";
 import { useState, useEffect } from "react";
 
@@ -17,8 +18,7 @@ export const useGetUser = (params: Promise<{ id: string }>) => {
 
       setUser(response.data);
     } catch (error) {
-      console.error("Error fetching user:", error);
-      setError("Erro ao carregar usuário");
+      setError(getErrorMessage(error));
     } finally {
       setLoadingUser(false);
     }
@@ -30,8 +30,7 @@ export const useGetUser = (params: Promise<{ id: string }>) => {
         const resolvedParams = await params;
         await fetchUser(resolvedParams.id);
       } catch (err) {
-        console.error("Error resolving params:", err);
-        setError("Erro ao carregar parâmetros");
+        setError(getErrorMessage(err));
         setLoadingUser(false);
       }
     };
@@ -40,4 +39,4 @@ export const useGetUser = (params: Promise<{ id: string }>) => {
   }, [params]);
 
   return { user, loadingUser, error, fetchUser };
-}
+};
