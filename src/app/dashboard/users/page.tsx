@@ -67,7 +67,8 @@ export default function Dashboard() {
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Usuários</h2>
             <p className="text-muted-foreground">
-              Gerencie os usuários do sistema
+              Gerencie os utilizadores do sistema. Para colaboradores pedirem férias, atribua um gestor no detalhe
+              do utilizador.
             </p>
           </div>
           <div className="flex items-center space-x-2">

@@ -17,8 +17,8 @@ Marcar `[x]` conforme for implementando. Referência técnica: [api-contract-and
 
 ## Prioridade P2 — utilizadores (admin)
 
-- [ ] Fluxo **criar utilizador** → **atribuir gestor** documentado na UI (texto de ajuda ou stepper), coerente com RF-08.
-- [ ] **`useChangeManager`**: após sucesso, atualizar cache local ou `refetch` do utilizador para o callout de férias refletir o novo gestor.
+- [x] Fluxo **criar utilizador** → **atribuir gestor** documentado na UI (modal criar, lista de utilizadores, nova férias, detalhe com texto RF-08).
+- [x] **`useChangeManager`**: mensagens via `parseApiFailure`; após sucesso `fetchUser` + `useEffect` sincroniza `selectedManager` com `user.managerId`.
 
 ## Prioridade P3 — consistência
 

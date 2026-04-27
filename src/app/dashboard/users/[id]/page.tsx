@@ -15,7 +15,6 @@ import { useChangeManager } from "@/hooks/users/useChangeManager";
 import { UserStore } from "@/stores/user";
 import { UpdateRolesModal } from "@/components/UpdateRolesModal";
 import { toast } from "sonner";
-import { getErrorMessage } from "@/lib/api-errors";
 
 interface UserDetailPageProps {
   params: Promise<{
@@ -37,25 +36,22 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
   ) || false;
 
   useEffect(() => {
-    if (user && !selectedManager) {
-      setSelectedManager(user.managerId || "");
-    }
-  }, [user, selectedManager]);
+    if (!user) return;
+    setSelectedManager(user.managerId || "");
+  }, [user?.id, user?.managerId]);
 
   const handleUpdateManager = async () => {
     if (!user) return;
 
     try {
-      let result;
-
-      if (selectedManager && selectedManager !== "") {
-        result = await changeManager(user.id, selectedManager);
+      if (!selectedManager || selectedManager === "") {
+        toast.error("Selecione um gestor ou administrador para associar.");
+        return;
       }
-      if (result) {
-        await fetchUser(user.id);
-      }
-    } catch (error) {
-      toast.error(getErrorMessage(error));
+      await changeManager(user.id, selectedManager);
+      await fetchUser(user.id);
+    } catch {
+      /* mensagem já exibida em useChangeManager */
     }
   };
 
@@ -190,10 +186,14 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
 
         {currentUser?.roles?.includes("ADMIN") && (
           <div className="bg-white p-6 rounded-lg border shadow-sm">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-2">
               <Users className="h-5 w-5 text-blue-600" />
-              <h3 className="text-lg font-semibold">Atribuição de Gerente</h3>
+              <h3 className="text-lg font-semibold">Atribuição de gestor</h3>
             </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Colaboradores com perfil <strong>USER</strong> precisam de um gestor ou administrador associado
+              antes de poderem criar pedidos de férias. Após guardar, os dados são atualizados automaticamente.
+            </p>
 
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

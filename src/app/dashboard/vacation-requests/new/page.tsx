@@ -226,6 +226,10 @@ export default function NewVacationRequestPage() {
                     <li>• Solicitações precisam de aprovação</li>
                     <li>• Mínimo de 10 caracteres no motivo</li>
                     <li>• Não é possível selecionar datas passadas</li>
+                    <li>
+                      • É necessário ter <strong>gestor associado</strong> (em Utilizadores → detalhe) para a API
+                      aceitar o pedido
+                    </li>
                   </ul>
                 </div>
               </div>

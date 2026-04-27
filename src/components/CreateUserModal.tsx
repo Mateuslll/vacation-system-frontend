@@ -66,9 +66,13 @@ export function CreateUserModal({ trigger, onSuccess }: CreateUserModalProps) {
             Criar Novo Usuário
           </DialogTitle>
           <DialogDescription>
-            Preencha as informações abaixo para criar um novo usuário no sistema.
-            O usuário receberá as credenciais por email.
+            Preencha as informações abaixo para criar um novo utilizador no sistema.
           </DialogDescription>
+          <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+            <strong>Próximo passo (férias):</strong> após criar o colaborador, um administrador deve abrir{" "}
+            <strong>Utilizadores</strong>, entrar no <strong>detalhe</strong> do utilizador e{" "}
+            <strong>atribuir um gestor</strong> (MANAGER ou ADMIN). Sem gestor, a API recusa novos pedidos de férias.
+          </div>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
