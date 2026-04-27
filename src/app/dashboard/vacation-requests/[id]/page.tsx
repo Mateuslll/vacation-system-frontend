@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { Controller } from "react-hook-form";
 import { useVacationRequestDetails } from "@/hooks/vacation/useVacationRequestDetails";
+import { useUpdateVacationRequest } from "@/hooks/vacation/useUpdateVacationRequest";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Calendar, User, FileText, CheckCircle, XCircle, Clock, AlertCircle, InfoIcon } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { DatePicker } from "@/components/DatePicker";
+import { ArrowLeft, Calendar, User, FileText, CheckCircle, XCircle, InfoIcon, Pencil } from "lucide-react";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 import { UserStore } from "@/stores/user";
@@ -14,6 +18,7 @@ import { useActionsVacation } from "@/hooks/vacation/useActionsVacation";
 import { RejectVacationFormData } from "@/types/forms";
 import { RejectVacationModal } from "@/components/RejectVacationModal";
 import StatusBadge from "@/components/StatusBadge";
+import { parseISO } from "date-fns";
 
 interface VacationDetailPageProps {
   params: Promise<{
@@ -22,13 +27,25 @@ interface VacationDetailPageProps {
 }
 
 export default function VacationDetailsPage({ params }: VacationDetailPageProps) {
+  const currentUser = UserStore((state) => state.user);
   const { vacationRequest, setVacationRequest, loadingVacation, errorVacation } = useVacationRequestDetails(params);
   const { form, approveVacation, rejectVacation, cancelVacation, loadingActionsVacation } = useActionsVacation();
+  const { form: editForm, onSubmit: submitEditForm, errors: editErrors, loading: loadingEdit } =
+    useUpdateVacationRequest(vacationRequest, {
+      onSuccess: (updated) => {
+        setVacationRequest(updated);
+        setEditingVacation(false);
+      },
+    });
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const currentUser = UserStore(state => state.user);
-  const canApproveVacations = currentUser?.roles?.some(role =>
-    role === "ADMIN" || role === "MANAGER"
-  ) || false;
+  const [editingVacation, setEditingVacation] = useState(false);
+  const canApproveVacations =
+    currentUser?.roles?.some((role) => role === "ADMIN" || role === "MANAGER") || false;
+  const canEditVacation =
+    !!vacationRequest &&
+    vacationRequest.status.toUpperCase() === "PENDING" &&
+    (vacationRequest.userId === currentUser?.id ||
+      Boolean(currentUser?.roles?.some((r) => r === "ADMIN")));
 
 
   const handleApprove = async () => {
@@ -64,6 +81,25 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
       }
     } catch {
       /* erro já exibido em useActionsVacation */
+    }
+  };
+
+  const handleCancelEdit = () => {
+    if (!vacationRequest) return;
+    editForm.reset({
+      startDate: parseISO(vacationRequest.startDate),
+      endDate: parseISO(vacationRequest.endDate),
+      reason: vacationRequest.reason ?? "",
+    });
+    setEditingVacation(false);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await submitEditForm(e);
+    } catch {
+      /* erro já exibido em useUpdateVacationRequest */
     }
   };
 
@@ -123,11 +159,17 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
                 Informações do Funcionário e Período
               </CardTitle>
+              {canEditVacation && !editingVacation && (
+                <Button type="button" variant="outline" size="sm" onClick={() => setEditingVacation(true)}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Editar
+                </Button>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -143,38 +185,103 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
 
               <Separator />
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Data de Início</label>
-                  <p className="text-lg font-semibold text-gray-900">{formatDate(vacationRequest.startDate)}</p>
+              {editingVacation ? (
+                <form onSubmit={handleSaveEdit} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Data de início</Label>
+                      <Controller
+                        name="startDate"
+                        control={editForm.control}
+                        render={({ field }) => (
+                          <DatePicker
+                            date={field.value}
+                            onSelect={field.onChange}
+                            placeholder="Data de início"
+                            disabled={loadingEdit}
+                          />
+                        )}
+                      />
+                      {editErrors.startDate && (
+                        <p className="text-xs text-red-500">{editErrors.startDate.message}</p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Data de término</Label>
+                      <Controller
+                        name="endDate"
+                        control={editForm.control}
+                        render={({ field }) => (
+                          <DatePicker
+                            date={field.value}
+                            onSelect={field.onChange}
+                            placeholder="Data de término"
+                            disabled={loadingEdit}
+                          />
+                        )}
+                      />
+                      {editErrors.endDate && (
+                        <p className="text-xs text-red-500">{editErrors.endDate.message}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Motivo</Label>
+                    <Textarea
+                      {...editForm.register("reason")}
+                      className="min-h-[100px] resize-none"
+                      disabled={loadingEdit}
+                      maxLength={500}
+                    />
+                    {editErrors.reason && (
+                      <p className="text-xs text-red-500">{editErrors.reason.message}</p>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="submit" disabled={loadingEdit || !editForm.formState.isValid}>
+                      {loadingEdit ? "A guardar…" : "Guardar alterações"}
+                    </Button>
+                    <Button type="button" variant="outline" onClick={handleCancelEdit} disabled={loadingEdit}>
+                      Cancelar edição
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Data de Início</label>
+                    <p className="text-lg font-semibold text-gray-900">{formatDate(vacationRequest.startDate)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Data de Término</label>
+                    <p className="text-lg font-semibold text-gray-900">{formatDate(vacationRequest.endDate)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Total de Dias</label>
+                    <p className="text-lg font-semibold text-blue-600">{vacationRequest.days} dias</p>
+                  </div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Data de Término</label>
-                  <p className="text-lg font-semibold text-gray-900">{formatDate(vacationRequest.endDate)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Total de Dias</label>
-                  <p className="text-lg font-semibold text-blue-600">{vacationRequest.days} dias</p>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Motivo da Solicitação
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-gray-900 leading-relaxed">
-                  {vacationRequest.reason || "Nenhum motivo especificado."}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {!editingVacation && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Motivo da Solicitação
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-gray-900 leading-relaxed">
+                    {vacationRequest.reason || "Nenhum motivo especificado."}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {vacationRequest.status.toUpperCase() === "REJECTED" && vacationRequest.rejectionReason && (
             <Card className="border-red-200">

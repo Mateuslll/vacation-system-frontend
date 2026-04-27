@@ -13,7 +13,7 @@ Marcar `[x]` conforme for implementando. Referência técnica: [api-contract-and
 - [x] **`src/hooks/vacation/useCreateVacationRequest.ts`**: toasts com mensagem da API (**400** gestor/validação, **403**, **409** overlap); `onSuccess` para redirecionar após criação.
 - [x] **`src/types/vacation.ts`**: `userRole?: string | null` em `VacationRequest` e `VacationRequestListItem`.
 - [x] **`useActionsVacation`**: aprovar / rejeitar / cancelar com toast a partir de `detail` da API.
-- [ ] Página **edição** `PUT` de férias: ainda não existe no front; quando existir, alinhar 409 (processado vs overlap).
+- [x] Página **edição** `PUT` de férias: detalhe `PENDING` (dono ou ADMIN) com `useUpdateVacationRequest` → `PUT /vacation-requests/{id}`; erros **409**/outros via `parseApiFailure` / toast.
 
 ## Prioridade P2 — utilizadores (admin)
 
