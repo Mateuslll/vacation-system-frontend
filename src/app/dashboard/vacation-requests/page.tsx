@@ -11,12 +11,13 @@ import { useListVacationsByTeam } from "@/hooks/vacation/useListVacationsByTeam"
 import { useState, useEffect, Suspense } from "react";
 import { UserStore } from "@/stores/user";
 import { useSearchParams } from "next/navigation";
+import { canManageUsers } from "@/lib/auth-user";
 
 function VacationRequestsContent() {
   const currentUser = UserStore(state => state.user);
   const searchParams = useSearchParams();
 
-  const isAdminOrManager = currentUser?.roles?.includes("ADMIN") || currentUser?.roles?.includes("MANAGER");
+  const isAdminOrManager = canManageUsers(currentUser?.roles);
   const { vacationRequests, loading, error, refetch } = useGetVacationRequests(isAdminOrManager);
   const { myVacationsRequests, loadingMyVacationRequests, fetchMyVacationRequests } = useMyVacationRequests();
   const { teamVacations, loadingTeamVacations, fetchTeamVacations } = useListVacationsByTeam();
@@ -24,7 +25,7 @@ function VacationRequestsContent() {
   const getInitialFilter = () => {
     const urlFilter = searchParams.get('filter');
     if (urlFilter === 'mine') return 'mine';
-    if (currentUser && (currentUser.roles?.includes("ADMIN") || currentUser.roles?.includes("MANAGER"))) {
+    if (currentUser && canManageUsers(currentUser.roles)) {
       return 'all';
     }
     return 'mine';
@@ -32,16 +33,21 @@ function VacationRequestsContent() {
 
   const [filterType, setFilterType] = useState<'all' | 'mine' | 'myteam'>(getInitialFilter());
 
-  useEffect(() => {
-    const urlFilter = searchParams.get('filter');
+  const urlFilter = searchParams.get("filter");
+  const userId = currentUser?.id ?? "";
+  const rolesKey = (currentUser?.roles ?? []).join(",");
 
-    if (urlFilter === 'mine' || (!currentUser?.roles?.includes("ADMIN") && !currentUser?.roles?.includes("MANAGER"))) {
-      setFilterType('mine');
-      fetchMyVacationRequests();
-    } else if (currentUser && (currentUser.roles?.includes("ADMIN") || currentUser.roles?.includes("MANAGER"))) {
-      setFilterType('all');
+  useEffect(() => {
+    if (!userId) return;
+
+    const roles = rolesKey.length > 0 ? rolesKey.split(",") : [];
+    if (urlFilter === "mine" || !canManageUsers(roles)) {
+      setFilterType("mine");
+      void fetchMyVacationRequests();
+    } else {
+      setFilterType("all");
     }
-  }, [currentUser, searchParams]);
+  }, [userId, rolesKey, urlFilter, fetchMyVacationRequests]);
 
   const getCurrentRequests = () => {
     if (filterType === 'mine') {
@@ -191,7 +197,7 @@ function VacationRequestsContent() {
                 <SelectValue placeholder="Filtrar por..." />
               </SelectTrigger>
               <SelectContent>
-                {currentUser?.roles?.includes("ADMIN") || currentUser?.roles?.includes("MANAGER") ? (
+                {isAdminOrManager ? (
                   <>
                     <SelectItem value="all">Todas as solicitações</SelectItem>
                     <SelectItem value="mine">Minhas solicitações</SelectItem>

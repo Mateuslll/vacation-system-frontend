@@ -21,6 +21,16 @@ export function buildSessionUser(user: AuthUserPayload, roles: string[]) {
   };
 }
 
+/** Alinha com `ROLE_ADMIN` no Spring e `ADMIN` no JWT / store. */
+export function normalizeRoleName(role: string): string {
+  return role.replace(/^ROLE_/i, "");
+}
+
 export function canManageUsers(roles?: string[] | null): boolean {
-  return roles?.some((r) => r === "ADMIN" || r === "MANAGER") ?? false;
+  return (
+    roles?.some((r) => {
+      const n = normalizeRoleName(r);
+      return n === "ADMIN" || n === "MANAGER";
+    }) ?? false
+  );
 }

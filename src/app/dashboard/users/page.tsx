@@ -13,20 +13,34 @@ import { useListUsers } from "@/hooks/users/useListUsers";
 import { useListManagersAndAdmins } from "@/hooks/users/useListManagersAndAdmins";
 import { useListUserByCollaborators } from "@/hooks/users/useListUserByCollaborators";
 import { UserStore } from "@/stores/user";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { canManageUsers } from "@/lib/auth-user";
+import type { UserListStatusFilter } from "@/types/user";
 
 export default function UsersListPage() {
   const router = useRouter();
   const currentUser = UserStore((state) => state.user);
   const canAccess = canManageUsers(currentUser?.roles);
 
-  const { users, fetchUsers } = useListUsers(canAccess);
+  const [listStatus, setListStatus] = useState<UserListStatusFilter>("ALL");
+  const { users, fetchUsers, loadingUser } = useListUsers(canAccess, listStatus);
   const { managersAndAdmins, loadingAdmins } = useListManagersAndAdmins(canAccess);
   const { usersFiltered, loading: loadingFiltered, fetchUsersByCollaborators } = useListUserByCollaborators();
 
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
   const [displayUsers, setDisplayUsers] = useState(users);
+  const teamFilterOptions = useMemo(() => {
+    const merged = [...(users ?? []), ...(managersAndAdmins ?? [])];
+    const byId = new Map<string, typeof merged[number]>();
+
+    for (const user of merged) {
+      if (!byId.has(user.id)) {
+        byId.set(user.id, user);
+      }
+    }
+
+    return Array.from(byId.values());
+  }, [users, managersAndAdmins]);
 
   useEffect(() => {
     if (currentUser && !canManageUsers(currentUser.roles)) {
@@ -134,45 +148,64 @@ export default function UsersListPage() {
                 </h3>
                 {selectedFilter !== "all" && (
                   <p className="text-sm text-gray-600 mt-1">
-                    Exibindo colaboradores de: {managersAndAdmins?.find(m => m.id === selectedFilter)?.name}
+                    Exibindo colaboradores de: {teamFilterOptions.find((u) => u.id === selectedFilter)?.name}
                   </p>
                 )}
               </div>
 
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                <div className="flex flex-wrap items-center gap-2">
                   <Filter className="h-4 w-4 text-gray-500" />
-                  <Label htmlFor="user-filter" className="text-sm font-medium">
-                    Selecione o filtro:
+                  <Label htmlFor="user-status" className="text-sm font-medium whitespace-nowrap">
+                    Estado na lista:
                   </Label>
+                  <Select
+                    value={listStatus}
+                    onValueChange={(v) => setListStatus(v as UserListStatusFilter)}
+                    disabled={loadingUser}
+                  >
+                    <SelectTrigger id="user-status" className="w-[200px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">Todos</SelectItem>
+                      <SelectItem value="ACTIVE">Ativos</SelectItem>
+                      <SelectItem value="INACTIVE">Inativos</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <Select
-                  value={selectedFilter}
-                  onValueChange={handleFilterChange}
-                  disabled={loadingAdmins || loadingFiltered}
-                >
-                  <SelectTrigger id="user-filter" className="w-[250px]">
-                    <SelectValue placeholder={loadingAdmins ? "Carregando..." : "Selecione um filtro"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os usuários</SelectItem>
-                    {managersAndAdmins?.map((manager) => (
-                      <SelectItem key={manager.id} value={manager.id}>
-                        <div className="flex items-center gap-2">
-                          <span>{manager.name}</span>
-                          <div className="flex gap-1">
-                            {manager.roles.map((role) => (
-                              <span key={role} className="text-xs bg-blue-100 text-blue-800 px-1 rounded">
-                                {role}
-                              </span>
-                            ))}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Label htmlFor="user-filter" className="text-sm font-medium whitespace-nowrap">
+                    Por equipa:
+                  </Label>
+                  <Select
+                    value={selectedFilter}
+                    onValueChange={handleFilterChange}
+                    disabled={loadingAdmins || loadingFiltered}
+                  >
+                    <SelectTrigger id="user-filter" className="w-[250px]">
+                      <SelectValue placeholder={loadingAdmins ? "Carregando..." : "Selecione um filtro"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os utilizadores</SelectItem>
+                      {teamFilterOptions.map((userOption) => (
+                        <SelectItem key={userOption.id} value={userOption.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{userOption.name}</span>
+                            <div className="flex gap-1">
+                              {userOption.roles.map((role) => (
+                                <span key={role} className="text-xs bg-blue-100 text-blue-800 px-1 rounded">
+                                  {role}
+                                </span>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 {loadingFiltered && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">

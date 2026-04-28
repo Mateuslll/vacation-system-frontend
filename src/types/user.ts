@@ -1,3 +1,6 @@
+/** Query `GET /users?status=` — alinhado com `UserStatusFilter` no backend. */
+export type UserListStatusFilter = "ACTIVE" | "INACTIVE" | "ALL";
+
 export interface UserListItem {
   id: string;
   name: string;

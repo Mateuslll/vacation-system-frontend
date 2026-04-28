@@ -13,6 +13,8 @@ import { useMyVacationRequests } from "@/hooks/vacation/useMyVacationRequests";
 export default function DashboardPage() {
   const currentUser = UserStore((s) => s.user);
   const isStaff = canManageUsers(currentUser?.roles);
+  const userId = currentUser?.id ?? "";
+  const rolesKey = (currentUser?.roles ?? []).join(",");
 
   const { users, loadingUser } = useListUsers(!!isStaff);
   const { vacationRequests, loading: loadingAllVacations } = useGetVacationRequests(!!isStaff);
@@ -23,10 +25,12 @@ export default function DashboardPage() {
   } = useMyVacationRequests();
 
   useEffect(() => {
-    if (!isStaff) {
+    if (!userId) return;
+    const roles = rolesKey.length > 0 ? rolesKey.split(",") : [];
+    if (!canManageUsers(roles)) {
       void fetchMyVacationRequests();
     }
-  }, [isStaff, fetchMyVacationRequests]);
+  }, [userId, rolesKey, fetchMyVacationRequests]);
 
   const vacationList = isStaff ? vacationRequests : (myVacationsRequests ?? []);
   const vacLoading = isStaff ? loadingAllVacations : loadingMyVacationRequests;
