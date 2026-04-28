@@ -20,7 +20,7 @@ export default function SignUp() {
   const passwordRules = getPasswordRules(passwordValue);
 
   return (
-    <div className="w-full h-full bg-slate-100 flex items-center justify-center">
+    <div className="flex min-h-screen w-full items-center justify-center bg-slate-100 p-4 py-8">
       <div className="w-full max-w-md space-y-4">
 
         <div className="text-center">
@@ -48,7 +48,7 @@ export default function SignUp() {
           <CardContent className="space-y-2">
             <form onSubmit={onSubmit} className="space-y-2" autoComplete="off">
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
                     {t("auth.firstName")}

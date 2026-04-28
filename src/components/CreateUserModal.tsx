@@ -59,7 +59,7 @@ export function CreateUserModal({ trigger, onSuccess }: CreateUserModalProps) {
         )}
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <UserPlus className="h-5 w-5 text-green-600" />
@@ -76,7 +76,7 @@ export function CreateUserModal({ trigger, onSuccess }: CreateUserModalProps) {
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="firstName" className="text-sm font-medium">
                 Nome *
@@ -163,13 +163,14 @@ export function CreateUserModal({ trigger, onSuccess }: CreateUserModalProps) {
               variant="outline"
               onClick={() => setIsOpen(false)}
               disabled={loading}
+              className="w-full sm:w-auto"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={loading || !form.formState.isValid}
-              className="bg-green-600 hover:bg-green-700"
+              className="w-full bg-green-600 hover:bg-green-700 sm:w-auto"
             >
               {loading ? (
                 <div className="flex items-center gap-2">

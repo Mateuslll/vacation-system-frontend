@@ -7,11 +7,11 @@ Sistema moderno e completo para gerenciamento de usuários, solicitações de f�
 ## 🎯 **Funcionalidades Principais**
 
 ### 👥 **Gestão de Usuários**
-- ✅ **CRUD Completo** - Criar, visualizar, editar e gerenciar usuários
+- ✅ **Gestão Completa** - Criar, visualizar, ativar/desativar e atribuir roles
 - ✅ **Sistema de Roles** - USER, MANAGER, ADMIN com permissões específicas
 - ✅ **Atribuição de Managers** - Hierarquia organizacional
 - ✅ **Filtros Avançados** - Busca por colaboradores e roles
-- ✅ **Interface Responsiva** - Tabelas e modais otimizados
+- ✅ **Interface Responsiva** - Layout com sidebar mobile, tabelas e modais otimizados
 
 ### 🏖️ **Gestão de Férias**
 - ✅ **Solicitações Inteligentes** - Calendário com validações de negócio
@@ -50,7 +50,7 @@ As duas imagens publicas ja estao no Docker Hub:
 **Acessos:**
 - Frontend: http://localhost:3000
 - API: http://localhost:8080/api/v1
-- Swagger: http://localhost:8080/swagger-ui/index.html
+- Swagger: http://localhost:8080/api/v1/swagger-ui/index.html
 - PostgreSQL: localhost:5540 (user: `taskflow`, password: `taskflow123`, db: `taskflow`)
 
 Para encerrar:
@@ -143,7 +143,8 @@ src/
 │       └── schemas/           # Schemas Yup organizados
 │
 ├── 🗃️ stores/                 # Estado global (Zustand)
-│   └── user.ts                # Store do usuário logado
+│   ├── user.ts                # Store do usuário logado
+│   └── locale.ts              # Store de idioma atual (i18n)
 │
 ├── 🏷️ types/                  # Definições TypeScript
 │   ├── forms.ts               # Tipos de formulários
@@ -168,7 +169,8 @@ src/
 
 1. **Clone o repositório**
 ```bash
-git clone https://bitbucket.org/mateuslll/task-flow-frontend/src/main/
+git clone https://github.com/Mateuslll/vacation-system-frontend.git
+cd vacation-system-frontend
 ```
 
 2. **Instale as dependências**
@@ -219,7 +221,6 @@ npm run start
 1. 📊 **Dashboard** → Visão geral do sistema
 2. 👥 **Usuários** → Criar, editar, atribuir managers
 3. 🏖️ **Solicitações de Férias** → Aprovar/rejeitar, visualizar todas
-4. ⚙️ **Configurações** → Personalizar sistema
 
 #### **Como Funcionário (USER):**
 1. 📊 **Dashboard** → Visão pessoal
