@@ -111,8 +111,8 @@ export default function UsersListPage() {
         </div>
       </div>
 
-      <div className="flex-1 space-y-4 p-8 pt-6">
-        <div className="flex items-center justify-between space-y-2">
+      <div className="flex-1 space-y-4 p-4 pt-6 sm:p-6 lg:p-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">{t("users.title")}</h2>
             <p className="text-muted-foreground">
@@ -131,11 +131,11 @@ export default function UsersListPage() {
         </div>
 
         <div className="flex items-center space-x-2">
-          <div className="relative">
+          <div className="relative w-full sm:max-w-xs">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={t("users.searchPlaceholder")}
-              className="pl-8 w-[300px]"
+              className="w-full pl-8"
             />
           </div>
         </div>
@@ -154,7 +154,7 @@ export default function UsersListPage() {
                 )}
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Filter className="h-4 w-4 text-gray-500" />
                   <Label htmlFor="user-status" className="text-sm font-medium whitespace-nowrap">
@@ -165,7 +165,7 @@ export default function UsersListPage() {
                     onValueChange={(v) => setListStatus(v as UserListStatusFilter)}
                     disabled={loadingUser}
                   >
-                    <SelectTrigger id="user-status" className="w-[200px]">
+                    <SelectTrigger id="user-status" className="w-full sm:w-[200px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -185,7 +185,7 @@ export default function UsersListPage() {
                     onValueChange={handleFilterChange}
                     disabled={loadingAdmins || loadingFiltered}
                   >
-                    <SelectTrigger id="user-filter" className="w-[250px]">
+                    <SelectTrigger id="user-filter" className="w-full sm:w-[250px]">
                       <SelectValue placeholder={loadingAdmins ? t("users.loadingFilter") : t("users.selectFilter")} />
                     </SelectTrigger>
                     <SelectContent>

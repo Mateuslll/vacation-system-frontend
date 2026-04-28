@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Users, Calendar, Home, LogOut } from "lucide-react";
+import { Users, Calendar, Home, LogOut, Menu, X } from "lucide-react";
 import { UserStore } from "@/stores/user";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LanguageToggle } from "@/components/ui/language-toggle";
 import { useTranslations } from "@/lib/i18n";
 
@@ -56,14 +56,38 @@ export default function DashboardLayout({
   };
 
   const filteredNavigationItems = getFilteredNavigationItems();
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
 
   return (
     <div className="flex h-screen bg-background text-foreground">
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label={t("common.close")}
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+        />
+      )}
+
       <div className={`
         fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border shadow-sm transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0 lg:static lg:inset-0
       `}>
+        <div className="flex items-center justify-between border-b border-border px-4 py-3 lg:hidden">
+          <h2 className="text-sm font-semibold">{t("nav.appName")}</h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSidebarOpen(false)}
+            aria-label={t("common.close")}
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
         <div className="flex items-center justify-center h-16 px-4 border-b border-border">
           <div className="text-center leading-tight">
             <h1 className="text-xl font-bold text-foreground">{t("nav.appName")}</h1>
@@ -132,7 +156,20 @@ export default function DashboardLayout({
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background pt-16 lg:pt-0">
+        <div className="flex items-center justify-between border-b border-border bg-background px-4 py-3 lg:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSidebarOpen(true)}
+            aria-label={t("nav.dashboard")}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <span className="text-sm font-semibold">{t("nav.dashboard")}</span>
+          <LanguageToggle />
+        </div>
+
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background pt-0 lg:pt-0">
           {children}
         </main>
       </div>

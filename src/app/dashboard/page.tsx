@@ -50,9 +50,9 @@ export default function DashboardPage() {
     !isStaff ? "—" : loadingUser || users === null ? "—" : String(users.length);
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className="container mx-auto space-y-6 px-4 py-6 sm:px-6 sm:py-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">{t("dashboard.title")}</h1>
+        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">{t("dashboard.title")}</h1>
       </div>
 
       <div
