@@ -31,11 +31,21 @@ Sistema moderno e completo para gerenciamento de usuários, solicitações de f�
 
 ## ⚡ Quick Review (Docker Hub)
 
-Para avaliadores executarem rapidamente o ambiente completo com imagens publicas:
+As duas imagens publicas ja estao no Docker Hub:
+- `mateuslll/taskflow-frontend:latest`
+- `mateuslll/taskflow-backend:latest`
 
-```bash
-docker compose -p task-flow-app -f docker-compose.review.yml up -d
-```
+### Step by step
+
+1. Execute o comando abaixo na raiz de **qualquer um** dos dois repositorios (`task-flow-frontend` ou `task-flow-backend`), onde existe o ficheiro `docker-compose.review.yml`:
+
+   ```bash
+   docker compose -p task-flow-app -f docker-compose.review.yml up -d
+   ```
+
+2. O Docker vai iniciar todo o ambiente automaticamente (**frontend + backend + base de dados**).
+
+3. Abra a aplicacao em: `http://localhost:3000`
 
 **Acessos:**
 - Frontend: http://localhost:3000
