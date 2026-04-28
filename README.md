@@ -34,7 +34,7 @@ Sistema moderno e completo para gerenciamento de usuários, solicitações de f�
 Para avaliadores executarem rapidamente o ambiente completo com imagens publicas:
 
 ```bash
-docker compose -f docker-compose.review.yml up -d
+docker compose -p task-flow-app -f docker-compose.review.yml up -d
 ```
 
 **Acessos:**
@@ -46,7 +46,7 @@ docker compose -f docker-compose.review.yml up -d
 Para encerrar:
 
 ```bash
-docker compose -f docker-compose.review.yml down
+docker compose -p task-flow-app -f docker-compose.review.yml down
 ```
 
 ---
