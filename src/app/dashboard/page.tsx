@@ -1,25 +1,38 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Users, Calendar, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { UserStore } from "@/stores/user";
-import { canManageUsers } from "@/lib/auth-user";
+import { canManageUsers, isAdmin } from "@/lib/auth-user";
 import { useListUsers } from "@/hooks/users/useListUsers";
 import { useGetVacationRequests } from "@/hooks/vacation/useGetVacationRequests";
 import { useMyVacationRequests } from "@/hooks/vacation/useMyVacationRequests";
+import { useListVacationsByTeam } from "@/hooks/vacation/useListVacationsByTeam";
 import { useTranslations } from "@/lib/i18n";
+import { apiPrivate } from "@/lib/api";
+import { getErrorMessage } from "@/lib/api-errors";
+import type { UserListItem } from "@/types/user";
+import { toast } from "sonner";
 
 export default function DashboardPage() {
   const { t } = useTranslations();
   const currentUser = UserStore((s) => s.user);
   const isStaff = canManageUsers(currentUser?.roles);
+  const admin = isAdmin(currentUser?.roles);
   const userId = currentUser?.id ?? "";
   const rolesKey = (currentUser?.roles ?? []).join(",");
 
-  const { users, loadingUser } = useListUsers(!!isStaff);
-  const { vacationRequests, loading: loadingAllVacations } = useGetVacationRequests(!!isStaff);
+  const { users, loadingUser } = useListUsers(admin);
+  const [collaborators, setCollaborators] = useState<UserListItem[] | null>(null);
+  const [loadingCollaborators, setLoadingCollaborators] = useState(false);
+  const { vacationRequests, loading: loadingAllVacations } = useGetVacationRequests(admin);
+  const {
+    teamVacations,
+    fetchTeamVacations,
+    loadingTeamVacations,
+  } = useListVacationsByTeam();
   const {
     myVacationsRequests,
     fetchMyVacationRequests,
@@ -31,11 +44,52 @@ export default function DashboardPage() {
     const roles = rolesKey.length > 0 ? rolesKey.split(",") : [];
     if (!canManageUsers(roles)) {
       void fetchMyVacationRequests();
+    } else if (!isAdmin(roles)) {
+      void fetchTeamVacations();
     }
-  }, [userId, rolesKey, fetchMyVacationRequests]);
+  }, [userId, rolesKey, fetchMyVacationRequests, fetchTeamVacations]);
 
-  const vacationList = isStaff ? vacationRequests : (myVacationsRequests ?? []);
-  const vacLoading = isStaff ? loadingAllVacations : loadingMyVacationRequests;
+  useEffect(() => {
+    if (!userId || admin || !isStaff) {
+      setCollaborators(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoadingCollaborators(true);
+        const res = await apiPrivate.get<UserListItem[]>(
+          `/users/manager/${userId}/collaborators`
+        );
+        if (!cancelled) {
+          setCollaborators(res.data);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          toast.error(getErrorMessage(e));
+          setCollaborators([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingCollaborators(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, admin, isStaff]);
+
+  const vacationList = admin
+    ? vacationRequests
+    : isStaff
+      ? (teamVacations ?? [])
+      : (myVacationsRequests ?? []);
+  const vacLoading = admin
+    ? loadingAllVacations
+    : isStaff
+      ? loadingTeamVacations
+      : loadingMyVacationRequests;
 
   const countStatus = (status: string) =>
     vacLoading ? null : vacationList.filter((v) => v.status === status).length;
@@ -46,8 +100,17 @@ export default function DashboardPage() {
 
   const formatStat = (value: number | null) => (value === null ? "—" : String(value));
 
-  const totalUsersDisplay =
-    !isStaff ? "—" : loadingUser || users === null ? "—" : String(users.length);
+  const showTeamUserCount = isStaff;
+  const totalUsersLoading = admin ? loadingUser : loadingCollaborators;
+  const totalUsersDisplay = (() => {
+    if (!showTeamUserCount) return "—";
+    if (admin) {
+      if (loadingUser || users === null) return "—";
+      return String(users.length);
+    }
+    if (totalUsersLoading || collaborators === null) return "—";
+    return String(collaborators.length);
+  })();
 
   return (
     <div className="container mx-auto space-y-6 px-4 py-6 sm:px-6 sm:py-8">
@@ -56,9 +119,9 @@ export default function DashboardPage() {
       </div>
 
       <div
-        className={`grid grid-cols-1 gap-6 ${isStaff ? "md:grid-cols-2" : "md:grid-cols-1"}`}
+        className={`grid grid-cols-1 gap-6 ${admin ? "md:grid-cols-2" : "md:grid-cols-1"}`}
       >
-        {isStaff && (
+        {admin && (
           <Link href="/dashboard/users">
             <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
               <div className="flex items-center space-x-4">
@@ -90,9 +153,9 @@ export default function DashboardPage() {
       </div>
 
       <div
-        className={`grid grid-cols-1 gap-4 ${isStaff ? "md:grid-cols-4" : "md:grid-cols-3"}`}
+        className={`grid grid-cols-1 gap-4 ${showTeamUserCount ? "md:grid-cols-4" : "md:grid-cols-3"}`}
       >
-        {isStaff && (
+        {showTeamUserCount && (
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>

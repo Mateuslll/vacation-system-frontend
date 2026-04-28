@@ -159,11 +159,8 @@ const en = {
     endDateHint: "Minimum 5 consecutive days. Cannot overlap approved vacations",
     minDaysTip: "Minimum 5 consecutive days (including start date)",
     blockedDatesTip: "Dates approved for other employees are blocked",
-    approvalNeededTip: "Requests require approval",
     minReasonTip: "Minimum 10 characters in reason",
     noPastDatesTip: "Past dates cannot be selected",
-    managerRequiredTip:
-      "You must have an assigned manager (Users -> details) for the API to accept the request",
   },
 } as const;
 

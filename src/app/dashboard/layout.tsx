@@ -20,7 +20,7 @@ const navigationItems = [
     key: "users",
     href: "/dashboard/users",
     icon: Users,
-    roles: ["MANAGER", "ADMIN"],
+    roles: ["ADMIN"],
   },
   {
     key: "vacationRequests",

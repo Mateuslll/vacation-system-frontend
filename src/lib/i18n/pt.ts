@@ -159,11 +159,8 @@ const pt = {
     endDateHint: "Mínimo de 5 dias corridos. Não pode coincidir com férias aprovadas",
     minDaysTip: "Mínimo de 5 dias corridos (incluindo data inicial)",
     blockedDatesTip: "Datas já aprovadas para outros funcionários são bloqueadas",
-    approvalNeededTip: "Solicitações precisam de aprovação",
     minReasonTip: "Mínimo de 10 caracteres no motivo",
     noPastDatesTip: "Não é possível selecionar datas passadas",
-    managerRequiredTip:
-      "É necessário ter gestor associado (em Utilizadores -> detalhe) para a API aceitar o pedido",
   },
 } as const;
 
