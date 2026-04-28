@@ -29,6 +29,28 @@ Sistema moderno e completo para gerenciamento de usuários, solicitações de f�
 
 ---
 
+## ⚡ Quick Review (Docker Hub)
+
+Para avaliadores executarem rapidamente o ambiente completo com imagens publicas:
+
+```bash
+docker compose -f docker-compose.review.yml up -d
+```
+
+**Acessos:**
+- Frontend: http://localhost:3000
+- API: http://localhost:8080/api/v1
+- Swagger: http://localhost:8080/swagger-ui/index.html
+- PostgreSQL: localhost:5540 (user: `taskflow`, password: `taskflow123`, db: `taskflow`)
+
+Para encerrar:
+
+```bash
+docker compose -f docker-compose.review.yml down
+```
+
+---
+
 ## 🛠️ **Stack Tecnológico**
 
 ### **Frontend**
