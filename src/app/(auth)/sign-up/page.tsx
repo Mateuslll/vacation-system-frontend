@@ -10,8 +10,10 @@ import { Eye, EyeOff, UserPlus, Building2 } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { getPasswordRules } from "@/lib/password-rules";
+import { useTranslations } from "@/lib/i18n";
 
 export default function SignUp() {
+  const { t } = useTranslations();
   const { form, onSubmit, errors, loading } = useRegisterUser();
   const [showPassword, setShowPassword] = useState(false);
   const passwordValue = form.watch("password");
@@ -26,20 +28,20 @@ export default function SignUp() {
             <Building2 className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Criar Nova Conta
+            {t("auth.signUpTitle")}
           </h1>
           <p className="text-gray-600 mt-2">
-            Preencha os dados para criar sua conta
+            {t("auth.signUpSubtitle")}
           </p>
         </div>
 
         <Card className="shadow-xl border-0 bg-white/70 backdrop-blur-sm">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-2xl text-center text-gray-800">
-              Registrar-se
+              {t("auth.signUp")}
             </CardTitle>
             <CardDescription className="text-center text-gray-600">
-              Digite suas informações para criar uma nova conta
+              {t("auth.signUpDescription")}
             </CardDescription>
           </CardHeader>
 
@@ -49,7 +51,7 @@ export default function SignUp() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
-                    Nome
+                    {t("auth.firstName")}
                   </Label>
                   <Input
                     id="firstName"
@@ -65,7 +67,7 @@ export default function SignUp() {
 
                 <div className="space-y-2">
                   <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
-                    Sobrenome
+                    {t("auth.lastName")}
                   </Label>
                   <Input
                     id="lastName"
@@ -99,7 +101,7 @@ export default function SignUp() {
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                  Senha
+                  {t("auth.password")}
                 </Label>
                 <div className="relative">
                   <Input
@@ -149,12 +151,12 @@ export default function SignUp() {
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Criando conta...
+                    {t("auth.creatingAccount")}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <UserPlus className="w-4 h-4" />
-                    Criar Conta
+                    {t("auth.createAccount")}
                   </div>
                 )}
               </Button>
@@ -176,7 +178,7 @@ export default function SignUp() {
                 asChild
               >
                 <Link href="/sign-in">
-                  Já tenho uma conta
+                  {t("auth.haveAccount")}
                 </Link>
               </Button>
             </div>

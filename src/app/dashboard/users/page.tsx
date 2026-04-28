@@ -14,10 +14,12 @@ import { useListManagersAndAdmins } from "@/hooks/users/useListManagersAndAdmins
 import { useListUserByCollaborators } from "@/hooks/users/useListUserByCollaborators";
 import { UserStore } from "@/stores/user";
 import { useState, useEffect, useMemo } from "react";
-import { canManageUsers } from "@/lib/auth-user";
+import { canManageUsers, normalizeRoleName } from "@/lib/auth-user";
 import type { UserListStatusFilter } from "@/types/user";
+import { useTranslations } from "@/lib/i18n";
 
 export default function UsersListPage() {
+  const { t } = useTranslations();
   const router = useRouter();
   const currentUser = UserStore((state) => state.user);
   const canAccess = canManageUsers(currentUser?.roles);
@@ -77,7 +79,7 @@ export default function UsersListPage() {
   if (currentUser == null) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center p-8 text-muted-foreground">
-        A carregar a sessão…
+        {t("common.loadingSession")}
       </div>
     );
   }
@@ -85,7 +87,7 @@ export default function UsersListPage() {
   if (!canAccess) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center p-8 text-muted-foreground">
-        A redirecionar…
+        {t("common.redirecting")}
       </div>
     );
   }
@@ -97,13 +99,13 @@ export default function UsersListPage() {
           <Button variant="ghost" size="sm" asChild className="shrink-0">
             <Link href="/dashboard">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
+              {t("common.back")}
             </Link>
           </Button>
           <div className="mr-4 flex">
             <Users className="mr-2 h-6 w-6" />
             <span className="hidden font-bold sm:inline-block">
-              Gerenciamento de Usuários
+              {t("users.managementTitle")}
             </span>
           </div>
         </div>
@@ -112,14 +114,13 @@ export default function UsersListPage() {
       <div className="flex-1 space-y-4 p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Usuários</h2>
+            <h2 className="text-3xl font-bold tracking-tight">{t("users.title")}</h2>
             <p className="text-muted-foreground">
-              Gerencie os utilizadores do sistema. Para colaboradores pedirem férias, atribua um gestor no detalhe
-              do utilizador.
+              {t("users.subtitle")}
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            {currentUser?.roles?.includes("ADMIN") && (
+            {currentUser?.roles?.some((r) => normalizeRoleName(r) === "ADMIN") && (
               <CreateUserModal
                 onSuccess={() => {
                   fetchUsers();
@@ -133,7 +134,7 @@ export default function UsersListPage() {
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar usuários..."
+              placeholder={t("users.searchPlaceholder")}
               className="pl-8 w-[300px]"
             />
           </div>
@@ -144,11 +145,11 @@ export default function UsersListPage() {
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-medium">
-                  Lista de Usuários {displayUsers?.length || 0}
+                  {t("users.usersList")} {displayUsers?.length || 0}
                 </h3>
                 {selectedFilter !== "all" && (
                   <p className="text-sm text-gray-600 mt-1">
-                    Exibindo colaboradores de: {teamFilterOptions.find((u) => u.id === selectedFilter)?.name}
+                    {t("users.showingTeam")} {teamFilterOptions.find((u) => u.id === selectedFilter)?.name}
                   </p>
                 )}
               </div>
@@ -157,7 +158,7 @@ export default function UsersListPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <Filter className="h-4 w-4 text-gray-500" />
                   <Label htmlFor="user-status" className="text-sm font-medium whitespace-nowrap">
-                    Estado na lista:
+                    {t("users.listStatus")}
                   </Label>
                   <Select
                     value={listStatus}
@@ -168,16 +169,16 @@ export default function UsersListPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ALL">Todos</SelectItem>
-                      <SelectItem value="ACTIVE">Ativos</SelectItem>
-                      <SelectItem value="INACTIVE">Inativos</SelectItem>
+                      <SelectItem value="ALL">{t("users.all")}</SelectItem>
+                      <SelectItem value="ACTIVE">{t("users.active")}</SelectItem>
+                      <SelectItem value="INACTIVE">{t("users.inactive")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                   <Label htmlFor="user-filter" className="text-sm font-medium whitespace-nowrap">
-                    Por equipa:
+                    {t("users.byTeam")}
                   </Label>
                   <Select
                     value={selectedFilter}
@@ -185,10 +186,10 @@ export default function UsersListPage() {
                     disabled={loadingAdmins || loadingFiltered}
                   >
                     <SelectTrigger id="user-filter" className="w-[250px]">
-                      <SelectValue placeholder={loadingAdmins ? "Carregando..." : "Selecione um filtro"} />
+                      <SelectValue placeholder={loadingAdmins ? t("users.loadingFilter") : t("users.selectFilter")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos os utilizadores</SelectItem>
+                      <SelectItem value="all">{t("users.allUsers")}</SelectItem>
                       {teamFilterOptions.map((userOption) => (
                         <SelectItem key={userOption.id} value={userOption.id}>
                           <div className="flex items-center gap-2">
@@ -210,7 +211,7 @@ export default function UsersListPage() {
                 {loadingFiltered && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
-                    Filtrando...
+                    {t("users.filtering")}
                   </div>
                 )}
               </div>

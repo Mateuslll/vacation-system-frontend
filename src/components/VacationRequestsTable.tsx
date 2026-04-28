@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { VacationRequest } from "@/types/vacation";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatDateOnly } from "@/lib/utils";
 import { Eye, Clock } from "lucide-react";
 import Link from "next/link";
 import StatusBadge from "./StatusBadge";
@@ -110,8 +110,8 @@ export function VacationRequestsTable({ requests, loading }: VacationRequestsTab
               </TableCell>
               <TableCell>
                 <div className="text-sm">
-                  <div>{formatDate(request.startDate)}</div>
-                  <div className="text-gray-500">até {formatDate(request.endDate)}</div>
+                  <div>{formatDateOnly(request.startDate)}</div>
+                  <div className="text-gray-500">até {formatDateOnly(request.endDate)}</div>
                 </div>
               </TableCell>
               <TableCell>

@@ -15,8 +15,9 @@ import { useChangeManager } from "@/hooks/users/useChangeManager";
 import { UserStore } from "@/stores/user";
 import { UpdateRolesModal } from "@/components/UpdateRolesModal";
 import { toast } from "sonner";
-import { canManageUsers } from "@/lib/auth-user";
+import { canManageUsers, normalizeRoleName } from "@/lib/auth-user";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "@/lib/i18n";
 
 interface UserDetailPageProps {
   params: Promise<{
@@ -25,6 +26,7 @@ interface UserDetailPageProps {
 }
 
 export default function UserDetailPage({ params }: UserDetailPageProps) {
+  const { t } = useTranslations();
   const router = useRouter();
   const { user, loadingUser, error, fetchUser } = useGetUser(params);
   const { deactivateUser, activateUser, isToggling } = useToggleUser();
@@ -35,9 +37,7 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
   const [isUpdateRolesModalOpen, setIsUpdateRolesModalOpen] = useState(false);
   const [selectedManager, setSelectedManager] = useState<string>("");
 
-  const canToggleUsers = currentUser?.roles?.some(role =>
-    role === "ADMIN" || role === "MANAGER"
-  ) || false;
+  const canToggleUsers = canManageUsers(currentUser?.roles);
 
   useEffect(() => {
     if (currentUser && !canManageUsers(currentUser.roles)) {
@@ -55,7 +55,7 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
 
     try {
       if (!selectedManager || selectedManager === "") {
-        toast.error("Selecione um gestor ou administrador para associar.");
+        toast.error(t("users.managerRequiredError"));
         return;
       }
       await changeManager(user.id, selectedManager);
@@ -68,7 +68,7 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
   if (currentUser == null) {
     return (
       <div className="container mx-auto flex flex-1 items-center justify-center py-16 text-muted-foreground">
-        A carregar a sessão…
+        {t("common.loadingSession")}
       </div>
     );
   }
@@ -76,7 +76,7 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
   if (!canAccess) {
     return (
       <div className="container mx-auto flex flex-1 items-center justify-center py-16 text-muted-foreground">
-        A redirecionar…
+        {t("common.redirecting")}
       </div>
     );
   }
@@ -87,7 +87,7 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
         <div className="flex items-center justify-center h-64">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
-            <span>Carregando usuário...</span>
+            <span>{t("common.loading")}</span>
           </div>
         </div>
       </div>
@@ -99,12 +99,12 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
       <div className="container mx-auto py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">
-            {error || "Usuário não encontrado"}
+            {error || t("users.userNotFound")}
           </h1>
           <Link href="/dashboard">
             <Button>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar para Dashboard
+              {t("users.backToDashboard")}
             </Button>
           </Link>
         </div>
@@ -116,10 +116,11 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
     return status === "ACTIVE" ? (
       <Badge variant="default" className="bg-green-100 text-green-800">
         Ativo
+        {t("users.activeStatus")}
       </Badge>
     ) : (
       <Badge variant="secondary" className="bg-red-100 text-red-800">
-        Inativo
+        {t("users.inactiveStatus")}
       </Badge>
     );
   };
@@ -131,10 +132,10 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
           <Link href="/dashboard/users">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
+              {t("common.back")}
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold">Detalhes do Usuário</h1>
+          <h1 className="text-2xl font-bold">{t("users.detailsTitle")}</h1>
         </div>
       </div>
 
@@ -155,10 +156,10 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
                   <strong>Email:</strong> {user.email}
                 </p>
                 <p className="text-gray-600">
-                  <strong>Status:</strong> {getStatusBadge(user.status)}
+                  <strong>{t("users.status")}:</strong> {getStatusBadge(user.status)}
                 </p>
                 <div className="text-gray-600">
-                  <strong>Roles:</strong>
+                  <strong>{t("users.roles")}:</strong>
                   <div className="flex gap-1 mt-1">
                     {user.roles.map((role) => (
                       <Badge key={role} variant="outline" className="text-xs">
@@ -180,7 +181,7 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
                     onClick={() => deactivateUser(user.id)}
                   >
                     <CircleXIcon className="h-4 w-4" />
-                    Desativar Usuário
+                    {t("users.deactivateUser")}
                   </Button>
                 ) : (
                   <Button
@@ -191,11 +192,11 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
                     onClick={() => activateUser(user.id)}
                   >
                     <CircleXIcon className="h-4 w-4" />
-                    Ativar Usuário
+                    {t("users.activateUser")}
                   </Button>
                 )
               )}
-              {currentUser?.roles?.includes("ADMIN") && (
+              {currentUser?.roles?.some((r) => normalizeRoleName(r) === "ADMIN") && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -203,29 +204,28 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
                   onClick={() => setIsUpdateRolesModalOpen(true)}
                 >
                   <ShieldUser className="h-4 w-4" />
-                  Atualizar Roles
+                  {t("users.updateRoles")}
                 </Button>
               )}
             </div>
           </div>
         </div>
 
-        {currentUser?.roles?.includes("ADMIN") && (
+        {currentUser?.roles?.some((r) => normalizeRoleName(r) === "ADMIN") && (
           <div className="bg-white p-6 rounded-lg border shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <Users className="h-5 w-5 text-blue-600" />
-              <h3 className="text-lg font-semibold">Atribuição de gestor</h3>
+              <h3 className="text-lg font-semibold">{t("users.managerAssignment")}</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Colaboradores com perfil <strong>USER</strong> precisam de um gestor ou administrador associado
-              antes de poderem criar pedidos de férias. Após guardar, os dados são atualizados automaticamente.
+              {t("users.managerAssignmentHelp")}
             </p>
 
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="manager-select" className="text-sm font-medium">
-                    Selecionar Gerente/Administrador
+                    {t("users.selectManager")}
                   </Label>
                   <Select
                     value={selectedManager || "none"}
@@ -233,10 +233,10 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
                     disabled={loadingAdmins}
                   >
                     <SelectTrigger id="manager-select" className="w-full">
-                      <SelectValue placeholder={loadingAdmins ? "Carregando..." : "Selecione um gerente"} />
+                      <SelectValue placeholder={loadingAdmins ? t("users.loadingFilter") : t("users.selectManagerPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Nenhum gerente atribuído</SelectItem>
+                      <SelectItem value="none">{t("users.noManager")}</SelectItem>
                       {managersAndAdmins?.map((manager) => (
                         <SelectItem key={manager.id} value={manager.id}>
                           <div className="flex items-center justify-between w-full">
@@ -265,10 +265,10 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
                     {loadingChangeManager ? (
                       <div className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
-                        Atualizando...
+                        {t("users.updating")}
                       </div>
                     ) : (
-                      "Atualizar Gerente"
+                      t("users.updateManager")
                     )}
                   </Button>
                 </div>
@@ -278,18 +278,18 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
         )}
 
         <div className="bg-white p-6 rounded-lg border shadow-sm">
-          <h3 className="text-lg font-semibold mb-4">Informações de Atividade</h3>
+          <h3 className="text-lg font-semibold mb-4">{t("users.activityInfo")}</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <p className="text-sm text-gray-500">Último Login</p>
+              <p className="text-sm text-gray-500">{t("users.lastLogin")}</p>
               <p className="font-medium">{user.lastLogin ? formatDate(user.lastLogin) : "-"}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Criado em</p>
+              <p className="text-sm text-gray-500">{t("users.createdAt")}</p>
               <p className="font-medium">{formatDate(user.createdAt)}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Atualizado em</p>
+              <p className="text-sm text-gray-500">{t("users.updatedAt")}</p>
               <p className="font-medium">{formatDate(user.updatedAt)}</p>
             </div>
           </div>

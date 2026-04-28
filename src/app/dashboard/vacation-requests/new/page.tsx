@@ -13,8 +13,10 @@ import {DatePicker} from "@/components/DatePicker";
 import {useCreateVacationRequest} from "@/hooks/vacation/useCreateVacationRequest";
 import {useListVacationApproved} from "@/hooks/vacation/useListVacationApproved";
 import {addDays, isSameDay, startOfDay} from "date-fns";
+import { useTranslations } from "@/lib/i18n";
 
 export default function NewVacationRequestPage() {
+  const { t, locale } = useTranslations();
   const router = useRouter();
   const { form, onSubmit, loading, errors } = useCreateVacationRequest({
     onSuccess: () => router.push("/dashboard/vacation-requests"),
@@ -59,16 +61,16 @@ export default function NewVacationRequestPage() {
           <Link href="/dashboard/vacation-requests">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
+              {t("common.back")}
             </Button>
           </Link>
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <Calendar className="h-8 w-8 text-blue-600" />
-              Nova Solicitação de Férias
+              {t("vacations.newRequestTitle")}
             </h1>
             <p className="text-gray-600 mt-1">
-              Preencha os dados para solicitar suas férias
+              {t("vacations.newRequestSubtitle")}
             </p>
           </div>
         </div>
@@ -80,7 +82,7 @@ export default function NewVacationRequestPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Dados da Solicitação
+                {t("vacations.requestData")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -110,7 +112,7 @@ export default function NewVacationRequestPage() {
                       <p className="text-xs text-red-500">{errors.startDate.message}</p>
                     )}
                     <p className="text-xs text-gray-500">
-                      Datas já aprovadas são desabilitadas
+                      {t("vacations.blockedDatesHint")}
                     </p>
                   </div>
 
@@ -133,7 +135,7 @@ export default function NewVacationRequestPage() {
                       <p className="text-xs text-red-500">{errors.endDate.message}</p>
                     )}
                     <p className="text-xs text-gray-500">
-                      Mínimo de 5 dias corridos. Não pode coincidir com férias aprovadas
+                      {t("vacations.endDateHint")}
                     </p>
                   </div>
                 </div>
@@ -141,11 +143,11 @@ export default function NewVacationRequestPage() {
                 <Separator />
 
                 <div className="space-y-2">
-                  <Label htmlFor="reason">Motivo da Solicitação *</Label>
+                  <Label htmlFor="reason">{t("vacations.reasonLabel")}</Label>
                   <Textarea
                     id="reason"
                     {...form.register('reason')}
-                    placeholder="Descreva o motivo da sua solicitação de férias..."
+                    placeholder={t("vacations.reasonPlaceholder")}
                     className="min-h-[120px] resize-none"
                     disabled={loading}
                     maxLength={500}
@@ -162,7 +164,7 @@ export default function NewVacationRequestPage() {
                     disabled={loading}
                     className="flex-1"
                   >
-                    Limpar Formulário
+                    {t("common.clearForm")}
                   </Button>
                   <Button
                     type="submit"
@@ -172,12 +174,12 @@ export default function NewVacationRequestPage() {
                     {loading ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                        Enviando...
+                        {t("vacations.sending")}
                       </>
                     ) : (
                       <>
                         <CheckCircle className="mr-2 h-4 w-4" />
-                        Enviar Solicitação
+                        {t("vacations.submitRequest")}
                       </>
                     )}
                   </Button>
@@ -192,20 +194,20 @@ export default function NewVacationRequestPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                Resumo da Solicitação
+                {t("vacations.requestSummary")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label className="text-sm font-medium text-gray-600">Período Selecionado</Label>
+                <Label className="text-sm font-medium text-gray-600">{t("vacations.selectedPeriod")}</Label>
                 {startDate && endDate ? (
                   <div className="mt-1">
                     <p className="text-sm font-medium">
-                      {startDate.toLocaleDateString('pt-BR')} até {endDate.toLocaleDateString('pt-BR')}
+                      {startDate.toLocaleDateString(locale === "pt" ? "pt-PT" : "en-US")} - {endDate.toLocaleDateString(locale === "pt" ? "pt-PT" : "en-US")}
                     </p>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 mt-1">Selecione as datas</p>
+                  <p className="text-sm text-gray-500 mt-1">{t("vacations.selectDates")}</p>
                 )}
               </div>
 
@@ -218,17 +220,16 @@ export default function NewVacationRequestPage() {
                 <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <h4 className="text-sm font-medium text-blue-900 mb-2">
-                    Dicas Importantes
+                    {t("vacations.importantTips")}
                   </h4>
                   <ul className="text-xs text-blue-800 space-y-1">
-                    <li>• <strong>Mínimo de 5 dias corridos</strong> (incluindo data inicial)</li>
-                    <li>• Datas já aprovadas para outros funcionários são bloqueadas</li>
-                    <li>• Solicitações precisam de aprovação</li>
-                    <li>• Mínimo de 10 caracteres no motivo</li>
-                    <li>• Não é possível selecionar datas passadas</li>
+                    <li>• <strong>{t("vacations.minDaysTip")}</strong></li>
+                    <li>• {t("vacations.blockedDatesTip")}</li>
+                    <li>• {t("vacations.approvalNeededTip")}</li>
+                    <li>• {t("vacations.minReasonTip")}</li>
+                    <li>• {t("vacations.noPastDatesTip")}</li>
                     <li>
-                      • É necessário ter <strong>gestor associado</strong> (em Utilizadores → detalhe) para a API
-                      aceitar o pedido
+                      • {t("vacations.managerRequiredTip")}
                     </li>
                   </ul>
                 </div>

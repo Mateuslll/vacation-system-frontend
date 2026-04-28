@@ -10,14 +10,20 @@ import { Eye, EyeOff, LogIn, Building2, UserCog } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { useQuickSignIn } from "@/hooks/auth/useQuickSignIn";
+import { useTranslations } from "@/lib/i18n";
+import { LanguageToggle } from "@/components/ui/language-toggle";
 
 export default function SignIn() {
+  const { t } = useTranslations();
   const { form, onSubmit, errors, loading } = useAuthForm();
   const { quickSignInAdmin, loadingQuickLogin } = useQuickSignIn();
   const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-slate-200 flex items-center justify-center p-4">
+      <div className="fixed right-4 top-4 z-20 rounded-lg border bg-white/80 px-1 py-1 shadow-sm backdrop-blur">
+        <LanguageToggle />
+      </div>
       <div className="w-full max-w-md space-y-8">
 
         <div className="text-center">
@@ -25,20 +31,20 @@ export default function SignIn() {
             <Building2 className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Sistema de Gerenciamento
+            {t("auth.systemTitle")}
           </h1>
           <p className="text-gray-600 mt-2">
-            Entre com suas credenciais para acessar
+            {t("auth.signInSubtitle")}
           </p>
         </div>
 
         <Card className="shadow-xl border-0 bg-white/70 backdrop-blur-sm">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-2xl text-center text-gray-800">
-              Entrar
+              {t("auth.signIn")}
             </CardTitle>
             <CardDescription className="text-center text-gray-600">
-              Digite seu email e senha para acessar sua conta
+              {t("auth.signInDescription")}
             </CardDescription>
           </CardHeader>
 
@@ -63,7 +69,7 @@ export default function SignIn() {
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                  Senha
+                  {t("auth.password")}
                 </Label>
                 <div className="relative">
                   <Input
@@ -106,12 +112,12 @@ export default function SignIn() {
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Entrando...
+                    {t("auth.signingIn")}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <LogIn className="w-4 h-4" />
-                    Entrar
+                    {t("auth.signIn")}
                   </div>
                 )}
               </Button>
@@ -131,13 +137,13 @@ export default function SignIn() {
               href="/sign-up"
               className="w-full flex items-center justify-center rounded-md h-11 bg-green-600 hover:bg-green-800 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
             >
-              Criar conta
+              {t("auth.createAccount")}
             </Link>
             <div className="relative">
               <Separator className="my-6" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="bg-white px-2 text-xs text-gray-500">
-                  Login rapido
+                  {t("auth.quickLogin")}
                 </span>
               </div>
             </div>
@@ -149,7 +155,7 @@ export default function SignIn() {
                 className="w-full h-11 bg-red-500 hover:bg-red-800 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 <UserCog className="w-4 h-4" />
-                Administrador
+                {t("auth.admin")}
               </Button>
             </div>
 

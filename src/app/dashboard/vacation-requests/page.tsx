@@ -12,8 +12,10 @@ import { useState, useEffect, Suspense } from "react";
 import { UserStore } from "@/stores/user";
 import { useSearchParams } from "next/navigation";
 import { canManageUsers } from "@/lib/auth-user";
+import { useTranslations } from "@/lib/i18n";
 
 function VacationRequestsContent() {
+  const { t } = useTranslations();
   const currentUser = UserStore(state => state.user);
   const searchParams = useSearchParams();
 
@@ -92,7 +94,7 @@ function VacationRequestsContent() {
           </h1>
           <Button onClick={() => refetch()}>
             <RefreshCw className="mr-2 h-4 w-4" />
-            Tentar Novamente
+            {t("common.retry")}
           </Button>
         </div>
       </div>
@@ -105,17 +107,17 @@ function VacationRequestsContent() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Calendar className="h-8 w-8 text-blue-600" />
-            Solicitações de Férias
+            {t("vacations.title")}
           </h1>
           <p className="text-gray-600 mt-1">
-            Gerencie todas as solicitações de férias dos funcionários
+            {t("vacations.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button asChild>
             <a href="/dashboard/vacation-requests/new">
               <Plus className="mr-2 h-4 w-4" />
-              Nova Solicitação
+              {t("vacations.newRequest")}
             </a>
           </Button>
         </div>
@@ -125,7 +127,7 @@ function VacationRequestsContent() {
         <div className="bg-white p-6 rounded-lg border shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total</p>
+              <p className="text-sm font-medium text-gray-600">{t("vacations.total")}</p>
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
             <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -137,7 +139,7 @@ function VacationRequestsContent() {
         <div className="bg-white p-6 rounded-lg border shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Pendentes</p>
+              <p className="text-sm font-medium text-gray-600">{t("vacations.pending")}</p>
               <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
             </div>
             <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
@@ -151,7 +153,7 @@ function VacationRequestsContent() {
         <div className="bg-white p-6 rounded-lg border shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Aprovadas</p>
+              <p className="text-sm font-medium text-gray-600">{t("vacations.approved")}</p>
               <p className="text-2xl font-bold text-green-600">{stats.approved}</p>
             </div>
             <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -165,7 +167,7 @@ function VacationRequestsContent() {
         <div className="bg-white p-6 rounded-lg border shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Rejeitadas</p>
+              <p className="text-sm font-medium text-gray-600">{t("vacations.rejected")}</p>
               <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
             </div>
             <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
@@ -181,12 +183,12 @@ function VacationRequestsContent() {
         <div className="p-6 border-b flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold">
-              {filterType === 'mine' ? 'Minhas Solicitações' :
-                filterType === 'myteam' ? 'Solicitações do Meu Time' :
-                  'Todas as Solicitações'}
+              {filterType === 'mine' ? t("vacations.myRequests") :
+                filterType === 'myteam' ? t("vacations.myTeamRequests") :
+                  t("vacations.allRequests")}
             </h2>
             <p className="text-sm text-gray-600">
-              {currentLoading ? "Carregando..." : `${stats.total} solicitações encontradas`}
+              {currentLoading ? t("common.loading") : `${stats.total} ${t("vacations.requestsFound")}`}
             </p>
           </div>
 
@@ -194,17 +196,17 @@ function VacationRequestsContent() {
             <Filter className="h-4 w-4 text-gray-500" />
             <Select value={filterType} onValueChange={handleFilterChange}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filtrar por..." />
+                <SelectValue placeholder={t("vacations.filterBy")} />
               </SelectTrigger>
               <SelectContent>
                 {isAdminOrManager ? (
                   <>
-                    <SelectItem value="all">Todas as solicitações</SelectItem>
-                    <SelectItem value="mine">Minhas solicitações</SelectItem>
-                    <SelectItem value="myteam">Meu time</SelectItem>
+                    <SelectItem value="all">{t("vacations.allRequestsFilter")}</SelectItem>
+                    <SelectItem value="mine">{t("vacations.myRequestsFilter")}</SelectItem>
+                    <SelectItem value="myteam">{t("vacations.myTeamFilter")}</SelectItem>
                   </>
                 ) : (
-                  <SelectItem value="mine">Minhas solicitações</SelectItem>
+                  <SelectItem value="mine">{t("vacations.myRequestsFilter")}</SelectItem>
                 )}
               </SelectContent>
             </Select>
@@ -224,16 +226,17 @@ function VacationRequestsContent() {
 }
 
 function VacationRequestsLoading() {
+  const { t } = useTranslations();
   return (
     <div className="container mx-auto py-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Calendar className="h-8 w-8 text-blue-600" />
-            Solicitações de Férias
+            {t("vacations.title")}
           </h1>
           <p className="text-gray-600 mt-1">
-            Carregando...
+            {t("common.loading")}
           </p>
         </div>
       </div>

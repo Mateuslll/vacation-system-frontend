@@ -16,6 +16,14 @@ export const formatDate = (dateString: string) => {
   }
 };
 
+export const formatDateOnly = (dateString: string) => {
+  try {
+    return format(new Date(dateString), "dd/MM/yyyy", { locale: ptBR });
+  } catch {
+    return "Data inválida";
+  }
+};
+
 
 export const getUserInitials = (firstName: string, lastName: string) => {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();

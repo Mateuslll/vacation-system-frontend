@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -43,25 +44,38 @@ export function UpdateRolesModal({
   currentRoles,
   onSuccess
 }: UpdateRolesModalProps) {
-  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const { updateUserRoles, loadingRoles } = useUpdateRoleUser();
 
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedRoles(currentRoles || []);
+    }
+  }, [isOpen, currentRoles]);
+
   const handleSave = async () => {
-    if (!selectedRole) {
-      toast.error("Selecione uma role");
+    if (!selectedRoles || selectedRoles.length === 0) {
+      toast.error("Selecione pelo menos uma role");
       return;
     }
 
-
-    await updateUserRoles(userId, selectedRole);
+    await updateUserRoles(userId, selectedRoles);
     onSuccess?.();
     onClose();
 
   };
 
   const handleCancel = () => {
-    setSelectedRole(currentRoles[0] || "");
+    setSelectedRoles(currentRoles || []);
     onClose();
+  };
+
+  const toggleRole = (role: string) => {
+    setSelectedRoles((prev) => {
+      const exists = prev.includes(role);
+      if (exists) return prev.filter((r) => r !== role);
+      return [...prev, role];
+    });
   };
 
   return (
@@ -70,25 +84,35 @@ export function UpdateRolesModal({
         <DialogHeader>
           <DialogTitle>Atualizar Role do Usuário</DialogTitle>
           <DialogDescription>
-            Selecione a nova role para o usuário. Esta ação irá sobrescrever as roles atuais.
+            Selecione as roles que o usuário deve ter. Esta ação irá substituir as roles atuais.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="role-select">Role</Label>
-            <Select value={selectedRole} onValueChange={setSelectedRole}>
-              <SelectTrigger id="role-select">
-                <SelectValue placeholder="Selecione uma role..." />
-              </SelectTrigger>
-              <SelectContent>
-                {availableRoles.map((role) => (
-                  <SelectItem key={role.value} value={role.value}>
+            <Label>Roles</Label>
+            <div className="flex flex-wrap gap-2">
+              {availableRoles.map((role) => {
+                const isSelected = selectedRoles.includes(role.value);
+                return (
+                  <Button
+                    key={role.value}
+                    type="button"
+                    variant={isSelected ? "default" : "outline"}
+                    onClick={() => toggleRole(role.value)}
+                    disabled={loadingRoles}
+                    className="h-9"
+                  >
                     {role.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                    {isSelected && (
+                      <Badge variant="secondary" className="ml-2 bg-white/20 text-white border-0">
+                        selecionado
+                      </Badge>
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -104,7 +128,7 @@ export function UpdateRolesModal({
           <Button
             type="button"
             onClick={handleSave}
-            disabled={loadingRoles || !selectedRole}
+            disabled={loadingRoles || selectedRoles.length === 0}
           >
             {loadingRoles ? (
               <>

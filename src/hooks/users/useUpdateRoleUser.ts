@@ -6,13 +6,12 @@ import { BadRequestError, handleApiError } from "@/lib/api-errors";
 export const useUpdateRoleUser = () => {
   const [loadingRoles, setLoadingRoles] = useState(false);
 
-  const updateUserRoles = async (userId: string, roles: string) => {
+  const updateUserRoles = async (userId: string, roles: string[]) => {
     try {
       setLoadingRoles(true);
 
-
       const response = await apiPrivate.put(`/users/${userId}/roles`, {
-        roleName: roles
+        roles
       });
 
       if (!response) throw new Error("No response from server");
@@ -26,7 +25,7 @@ export const useUpdateRoleUser = () => {
         handleApiError(error);
       } catch (apiError) {
         if (apiError instanceof BadRequestError) {
-          toast.error("Este usuario já possui essa permissão/papel.");
+          toast.error(apiError.message);
         }
       }
 

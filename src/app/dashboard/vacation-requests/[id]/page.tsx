@@ -12,13 +12,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/DatePicker";
 import { ArrowLeft, Calendar, User, FileText, CheckCircle, XCircle, InfoIcon, Pencil } from "lucide-react";
 import Link from "next/link";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatDateOnly } from "@/lib/utils";
 import { UserStore } from "@/stores/user";
 import { useActionsVacation } from "@/hooks/vacation/useActionsVacation";
 import { RejectVacationFormData } from "@/types/forms";
 import { RejectVacationModal } from "@/components/RejectVacationModal";
 import StatusBadge from "@/components/StatusBadge";
 import { parseISO } from "date-fns";
+import { canManageUsers, normalizeRoleName } from "@/lib/auth-user";
+import { useTranslations } from "@/lib/i18n";
 
 interface VacationDetailPageProps {
   params: Promise<{
@@ -27,6 +29,7 @@ interface VacationDetailPageProps {
 }
 
 export default function VacationDetailsPage({ params }: VacationDetailPageProps) {
+  const { t } = useTranslations();
   const currentUser = UserStore((state) => state.user);
   const { vacationRequest, setVacationRequest, loadingVacation, errorVacation } = useVacationRequestDetails(params);
   const { form, approveVacation, rejectVacation, cancelVacation, loadingActionsVacation } = useActionsVacation();
@@ -39,13 +42,13 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
     });
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [editingVacation, setEditingVacation] = useState(false);
-  const canApproveVacations =
-    currentUser?.roles?.some((role) => role === "ADMIN" || role === "MANAGER") || false;
+  const canApproveVacations = canManageUsers(currentUser?.roles);
+  const isAdmin = currentUser?.roles?.some((r) => normalizeRoleName(r) === "ADMIN") ?? false;
   const canEditVacation =
     !!vacationRequest &&
     vacationRequest.status.toUpperCase() === "PENDING" &&
     (vacationRequest.userId === currentUser?.id ||
-      Boolean(currentUser?.roles?.some((r) => r === "ADMIN")));
+      isAdmin);
 
 
   const handleApprove = async () => {
@@ -109,7 +112,7 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
         <div className="flex items-center justify-center h-64">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
-            <span>Carregando detalhes da solicitação...</span>
+            <span>{t("vacations.loadingDetails")}</span>
           </div>
         </div>
       </div>
@@ -121,12 +124,12 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
       <div className="container mx-auto py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">
-            {errorVacation || "Solicitação não encontrada"}
+            {errorVacation || t("vacations.requestNotFound")}
           </h1>
           <Link href="/dashboard/vacation-requests">
             <Button>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar para Solicitações
+              {t("vacations.backToRequests")}
             </Button>
           </Link>
         </div>
@@ -144,13 +147,13 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
           <Link href="/dashboard/vacation-requests">
             <Button variant="default" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
+              {t("common.back")}
             </Button>
           </Link>
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Calendar className="h-6 w-6 text-blue-600" />
-              Detalhes da Solicitação de Férias
+              {t("vacations.detailsTitle")}
             </h1>
           </div>
         </div>
@@ -162,23 +165,23 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
             <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                Informações do Funcionário e Período
+                {t("vacations.employeeInfoPeriod")}
               </CardTitle>
               {canEditVacation && !editingVacation && (
                 <Button type="button" variant="outline" size="sm" onClick={() => setEditingVacation(true)}>
                   <Pencil className="mr-2 h-4 w-4" />
-                  Editar
+                  {t("vacations.edit")}
                 </Button>
               )}
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Funcionário</label>
+                  <label className="text-sm font-medium text-gray-600">{t("vacations.employee")}</label>
                   <p className="text-lg font-semibold text-gray-900">{vacationRequest.userName}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">ID do Funcionário</label>
+                  <label className="text-sm font-medium text-gray-600">{t("users.employeeId")}</label>
                   <p className="text-sm text-gray-700 font-mono">{vacationRequest.userId}</p>
                 </div>
               </div>
@@ -189,7 +192,7 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
                 <form onSubmit={handleSaveEdit} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Data de início</Label>
+                      <Label>{t("vacations.startDate")}</Label>
                       <Controller
                         name="startDate"
                         control={editForm.control}
@@ -197,7 +200,7 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
                           <DatePicker
                             date={field.value}
                             onSelect={field.onChange}
-                            placeholder="Data de início"
+                            placeholder={t("vacations.startDate")}
                             disabled={loadingEdit}
                           />
                         )}
@@ -207,7 +210,7 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label>Data de término</Label>
+                      <Label>{t("vacations.endDate")}</Label>
                       <Controller
                         name="endDate"
                         control={editForm.control}
@@ -215,7 +218,7 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
                           <DatePicker
                             date={field.value}
                             onSelect={field.onChange}
-                            placeholder="Data de término"
+                            placeholder={t("vacations.endDate")}
                             disabled={loadingEdit}
                           />
                         )}
@@ -226,7 +229,7 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Motivo</Label>
+                    <Label>{t("vacations.requestReason")}</Label>
                     <Textarea
                       {...editForm.register("reason")}
                       className="min-h-[100px] resize-none"
@@ -239,26 +242,26 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button type="submit" disabled={loadingEdit || !editForm.formState.isValid}>
-                      {loadingEdit ? "A guardar…" : "Guardar alterações"}
+                      {loadingEdit ? t("vacations.saving") : t("common.save")}
                     </Button>
                     <Button type="button" variant="outline" onClick={handleCancelEdit} disabled={loadingEdit}>
-                      Cancelar edição
+                      {t("vacations.editCancel")}
                     </Button>
                   </div>
                 </form>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Data de Início</label>
-                    <p className="text-lg font-semibold text-gray-900">{formatDate(vacationRequest.startDate)}</p>
+                    <label className="text-sm font-medium text-gray-600">{t("vacations.startDate")}</label>
+                    <p className="text-lg font-semibold text-gray-900">{formatDateOnly(vacationRequest.startDate)}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Data de Término</label>
-                    <p className="text-lg font-semibold text-gray-900">{formatDate(vacationRequest.endDate)}</p>
+                    <label className="text-sm font-medium text-gray-600">{t("vacations.endDate")}</label>
+                    <p className="text-lg font-semibold text-gray-900">{formatDateOnly(vacationRequest.endDate)}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Total de Dias</label>
-                    <p className="text-lg font-semibold text-blue-600">{vacationRequest.days} dias</p>
+                    <label className="text-sm font-medium text-gray-600">{t("vacations.totalDays")}</label>
+                    <p className="text-lg font-semibold text-blue-600">{vacationRequest.days} {t("vacations.days")}</p>
                   </div>
                 </div>
               )}
@@ -270,13 +273,13 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5" />
-                  Motivo da Solicitação
+                  {t("vacations.requestReason")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="text-gray-900 leading-relaxed">
-                    {vacationRequest.reason || "Nenhum motivo especificado."}
+                    {vacationRequest.reason || t("vacations.noReason")}
                   </p>
                 </div>
               </CardContent>
@@ -288,7 +291,7 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-red-700">
                   <XCircle className="h-5 w-5" />
-                  Motivo da Rejeição
+                  {t("vacations.rejectionReason")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -305,11 +308,11 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Status e Aprovação</CardTitle>
+              <CardTitle className="text-lg">{t("vacations.statusApproval")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-600">Status Atual</label>
+                <label className="text-sm font-medium text-gray-600">{t("vacations.currentStatus")}</label>
                 <div className="mt-1">
                   <StatusBadge status={vacationRequest.status} />
                 </div>
@@ -319,7 +322,7 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
                 <>
                   <Separator />
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Aprovado por</label>
+                    <label className="text-sm font-medium text-gray-600">{t("vacations.approvedBy")}</label>
                     <p className="text-sm font-medium text-gray-900">{vacationRequest.approvedByName}</p>
                     <p className="text-xs text-gray-500 font-mono">{vacationRequest.approvedBy}</p>
                   </div>
@@ -332,7 +335,7 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
                   onClick={handleCancel}
                 >
                   <InfoIcon className="mr-2 h-4 w-4" />
-                  Cancelar
+                  {t("common.cancel")}
                 </Button>
               )}
             </CardContent>
@@ -340,22 +343,22 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Linha do Tempo</CardTitle>
+              <CardTitle className="text-lg">{t("vacations.timeline")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-600">Solicitado em</label>
+                <label className="text-sm font-medium text-gray-600">{t("vacations.requestedAt")}</label>
                 <p className="text-sm text-gray-900">{formatDate(vacationRequest.createdAt)}</p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-600">Última atualização</label>
+                <label className="text-sm font-medium text-gray-600">{t("vacations.lastUpdate")}</label>
                 <p className="text-sm text-gray-900">{formatDate(vacationRequest.updatedAt)}</p>
               </div>
 
               {vacationRequest.processedAt && (
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Processado em</label>
+                  <label className="text-sm font-medium text-gray-600">{t("vacations.processedAt")}</label>
                   <p className="text-sm text-gray-900">{formatDate(vacationRequest.processedAt)}</p>
                 </div>
               )}
@@ -365,7 +368,7 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
           {(canApproveVacations && vacationRequest.status.toUpperCase() === "PENDING") && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Ações</CardTitle>
+                <CardTitle className="text-lg">{t("vacations.actions")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button
@@ -374,7 +377,7 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
                   onClick={handleApprove}
                 >
                   <CheckCircle className="mr-2 h-4 w-4" />
-                  Aprovar
+                  {t("vacations.approve")}
                 </Button>
 
 
@@ -385,7 +388,7 @@ export default function VacationDetailsPage({ params }: VacationDetailPageProps)
                   onClick={() => setIsRejectModalOpen(true)}
                 >
                   <XCircle className="mr-2 h-4 w-4" />
-                  Rejeitar
+                  {t("vacations.reject")}
                 </Button>
               </CardContent>
             </Card>
