@@ -14,7 +14,7 @@ import { useListManagersAndAdmins } from "@/hooks/users/useListManagersAndAdmins
 import { useListUserByCollaborators } from "@/hooks/users/useListUserByCollaborators";
 import { UserStore } from "@/stores/user";
 import { useState, useEffect, useMemo } from "react";
-import { canManageUsers, normalizeRoleName } from "@/lib/auth-user";
+import { isAdmin, normalizeRoleName } from "@/lib/auth-user";
 import type { UserListStatusFilter } from "@/types/user";
 import { useTranslations } from "@/lib/i18n";
 
@@ -22,7 +22,7 @@ export default function UsersListPage() {
   const { t } = useTranslations();
   const router = useRouter();
   const currentUser = UserStore((state) => state.user);
-  const canAccess = canManageUsers(currentUser?.roles);
+  const canAccess = isAdmin(currentUser?.roles);
 
   const [listStatus, setListStatus] = useState<UserListStatusFilter>("ALL");
   const { users, fetchUsers, loadingUser } = useListUsers(canAccess, listStatus);
@@ -45,7 +45,7 @@ export default function UsersListPage() {
   }, [users, managersAndAdmins]);
 
   useEffect(() => {
-    if (currentUser && !canManageUsers(currentUser.roles)) {
+    if (currentUser && !isAdmin(currentUser.roles)) {
       router.replace("/dashboard/vacation-requests");
     }
   }, [currentUser, router]);

@@ -15,7 +15,7 @@ import { useChangeManager } from "@/hooks/users/useChangeManager";
 import { UserStore } from "@/stores/user";
 import { UpdateRolesModal } from "@/components/UpdateRolesModal";
 import { toast } from "sonner";
-import { canManageUsers, normalizeRoleName } from "@/lib/auth-user";
+import { isAdmin, normalizeRoleName } from "@/lib/auth-user";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "@/lib/i18n";
 
@@ -31,16 +31,16 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
   const { user, loadingUser, error, fetchUser } = useGetUser(params);
   const { deactivateUser, activateUser, isToggling } = useToggleUser();
   const currentUser = UserStore((state) => state.user);
-  const canAccess = canManageUsers(currentUser?.roles);
+  const canAccess = isAdmin(currentUser?.roles);
   const { managersAndAdmins, loadingAdmins } = useListManagersAndAdmins(canAccess);
   const { changeManager, loading: loadingChangeManager } = useChangeManager();
   const [isUpdateRolesModalOpen, setIsUpdateRolesModalOpen] = useState(false);
   const [selectedManager, setSelectedManager] = useState<string>("");
 
-  const canToggleUsers = canManageUsers(currentUser?.roles);
+  const canToggleUsers = isAdmin(currentUser?.roles);
 
   useEffect(() => {
-    if (currentUser && !canManageUsers(currentUser.roles)) {
+    if (currentUser && !isAdmin(currentUser.roles)) {
       router.replace("/dashboard/vacation-requests");
     }
   }, [currentUser, router]);

@@ -11,7 +11,7 @@ import { useListVacationsByTeam } from "@/hooks/vacation/useListVacationsByTeam"
 import { useState, useEffect, Suspense } from "react";
 import { UserStore } from "@/stores/user";
 import { useSearchParams } from "next/navigation";
-import { canManageUsers } from "@/lib/auth-user";
+import { canManageUsers, isAdmin } from "@/lib/auth-user";
 import { useTranslations } from "@/lib/i18n";
 
 function VacationRequestsContent() {
@@ -19,18 +19,20 @@ function VacationRequestsContent() {
   const currentUser = UserStore(state => state.user);
   const searchParams = useSearchParams();
 
-  const isAdminOrManager = canManageUsers(currentUser?.roles);
-  const { vacationRequests, loading, error, refetch } = useGetVacationRequests(isAdminOrManager);
+  const isVacationStaff = canManageUsers(currentUser?.roles);
+  const userIsAdmin = isAdmin(currentUser?.roles);
+  const { vacationRequests, loading, error, refetch } = useGetVacationRequests(userIsAdmin);
   const { myVacationsRequests, loadingMyVacationRequests, fetchMyVacationRequests } = useMyVacationRequests();
   const { teamVacations, loadingTeamVacations, fetchTeamVacations } = useListVacationsByTeam();
 
-  const getInitialFilter = () => {
-    const urlFilter = searchParams.get('filter');
-    if (urlFilter === 'mine') return 'mine';
-    if (currentUser && canManageUsers(currentUser.roles)) {
-      return 'all';
-    }
-    return 'mine';
+  const getInitialFilter = (): "all" | "mine" | "myteam" => {
+    const url = searchParams.get("filter");
+    if (url === "mine") return "mine";
+    if (url === "myteam") return "myteam";
+    if (!currentUser?.roles?.length) return "mine";
+    if (isAdmin(currentUser.roles)) return "all";
+    if (canManageUsers(currentUser.roles)) return "myteam";
+    return "mine";
   };
 
   const [filterType, setFilterType] = useState<'all' | 'mine' | 'myteam'>(getInitialFilter());
@@ -46,10 +48,13 @@ function VacationRequestsContent() {
     if (urlFilter === "mine" || !canManageUsers(roles)) {
       setFilterType("mine");
       void fetchMyVacationRequests();
-    } else {
+    } else if (isAdmin(roles)) {
       setFilterType("all");
+    } else {
+      setFilterType("myteam");
+      void fetchTeamVacations();
     }
-  }, [userId, rolesKey, urlFilter, fetchMyVacationRequests]);
+  }, [userId, rolesKey, urlFilter, fetchMyVacationRequests, fetchTeamVacations]);
 
   const getCurrentRequests = () => {
     if (filterType === 'mine') {
@@ -57,13 +62,16 @@ function VacationRequestsContent() {
     } else if (filterType === 'myteam') {
       return teamVacations || [];
     }
-    return isAdminOrManager ? (vacationRequests || []) : [];
+    if (filterType === "all" && userIsAdmin) {
+      return vacationRequests || [];
+    }
+    return [];
   };
 
   const currentRequests = getCurrentRequests();
   const currentLoading = filterType === 'mine' ? loadingMyVacationRequests :
     filterType === 'myteam' ? loadingTeamVacations :
-      (isAdminOrManager ? loading : false);
+      (userIsAdmin ? loading : false);
 
   const getStatsCards = () => {
     const requests = currentRequests;
@@ -85,7 +93,7 @@ function VacationRequestsContent() {
     }
   };
 
-  if (error && isAdminOrManager && filterType === 'all') {
+  if (error && userIsAdmin && filterType === 'all') {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">
@@ -199,9 +207,14 @@ function VacationRequestsContent() {
                 <SelectValue placeholder={t("vacations.filterBy")} />
               </SelectTrigger>
               <SelectContent>
-                {isAdminOrManager ? (
+                {userIsAdmin ? (
                   <>
                     <SelectItem value="all">{t("vacations.allRequestsFilter")}</SelectItem>
+                    <SelectItem value="mine">{t("vacations.myRequestsFilter")}</SelectItem>
+                    <SelectItem value="myteam">{t("vacations.myTeamFilter")}</SelectItem>
+                  </>
+                ) : isVacationStaff ? (
+                  <>
                     <SelectItem value="mine">{t("vacations.myRequestsFilter")}</SelectItem>
                     <SelectItem value="myteam">{t("vacations.myTeamFilter")}</SelectItem>
                   </>

@@ -26,6 +26,7 @@ export function normalizeRoleName(role: string): string {
   return role.replace(/^ROLE_/i, "");
 }
 
+/** ADMIN ou MANAGER: aprovar férias, ver equipa, etc. Não implica acesso à área de utilizadores (só ADMIN). */
 export function canManageUsers(roles?: string[] | null): boolean {
   return (
     roles?.some((r) => {
@@ -33,4 +34,8 @@ export function canManageUsers(roles?: string[] | null): boolean {
       return n === "ADMIN" || n === "MANAGER";
     }) ?? false
   );
+}
+
+export function isAdmin(roles?: string[] | null): boolean {
+  return roles?.some((r) => normalizeRoleName(r) === "ADMIN") ?? false;
 }

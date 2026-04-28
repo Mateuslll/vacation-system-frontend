@@ -225,12 +225,8 @@ export default function NewVacationRequestPage() {
                   <ul className="text-xs text-blue-800 space-y-1">
                     <li>• <strong>{t("vacations.minDaysTip")}</strong></li>
                     <li>• {t("vacations.blockedDatesTip")}</li>
-                    <li>• {t("vacations.approvalNeededTip")}</li>
                     <li>• {t("vacations.minReasonTip")}</li>
                     <li>• {t("vacations.noPastDatesTip")}</li>
-                    <li>
-                      • {t("vacations.managerRequiredTip")}
-                    </li>
                   </ul>
                 </div>
               </div>
