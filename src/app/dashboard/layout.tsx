@@ -65,9 +65,10 @@ export default function DashboardLayout({
         lg:translate-x-0 lg:static lg:inset-0
       `}>
         <div className="flex items-center justify-center h-16 px-4 border-b border-border">
-          <h1 className="text-xl font-bold text-foreground">
-            {t("nav.appName")}
-          </h1>
+          <div className="text-center leading-tight">
+            <h1 className="text-xl font-bold text-foreground">{t("nav.appName")}</h1>
+            <p className="text-xs text-muted-foreground">{t("nav.appSubtitle")}</p>
+          </div>
         </div>
 
         <nav className="mt-8">

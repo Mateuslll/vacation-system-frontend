@@ -14,10 +14,11 @@ const en = {
     users: "Users",
     vacationRequests: "Vacation Requests",
     logout: "Logout",
-    appName: "Task Flow Manager",
+    appName: "TaskFlow",
+    appSubtitle: "Vacation Manager",
   },
   auth: {
-    systemTitle: "Management System",
+    systemTitle: "TaskFlow",
     signInSubtitle: "Sign in with your credentials",
     signIn: "Sign In",
     signInDescription: "Enter your email and password to access your account",
@@ -49,6 +50,8 @@ const en = {
     subtitle:
       "Complete business management system. Manage users, vacations, and much more in a simple and efficient way.",
     loginButton: "Sign In",
+    brandName: "TaskFlow",
+    brandSubtitle: "Vacation Manager",
     featureVacationsTitle: "Vacation Management",
     featureVacationsDescription: "Request, approve, and manage vacations simply and efficiently",
     featureUsersTitle: "User Management",

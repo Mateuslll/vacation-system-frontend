@@ -14,10 +14,11 @@ const pt = {
     users: "Usuários",
     vacationRequests: "Solicitações de Férias",
     logout: "Sair",
-    appName: "Task Flow Manager",
+    appName: "TaskFlow",
+    appSubtitle: "Gerenciador de Férias",
   },
   auth: {
-    systemTitle: "Sistema de Gerenciamento",
+    systemTitle: "TaskFlow",
     signInSubtitle: "Entre com suas credenciais para acessar",
     signIn: "Entrar",
     signInDescription: "Digite seu email e senha para acessar sua conta",
@@ -49,6 +50,8 @@ const pt = {
     subtitle:
       "Sistema completo de gestão empresarial. Gerencie usuários, férias e muito mais de forma simples e eficiente.",
     loginButton: "Fazer Login",
+    brandName: "TaskFlow",
+    brandSubtitle: "Gerenciador de Férias",
     featureVacationsTitle: "Gestão de Férias",
     featureVacationsDescription: "Solicite, aprove e gerencie férias de forma simples e eficiente",
     featureUsersTitle: "Gestão de Usuários",

@@ -115,7 +115,6 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
   const getStatusBadge = (status: string) => {
     return status === "ACTIVE" ? (
       <Badge variant="default" className="bg-green-100 text-green-800">
-        Ativo
         {t("users.activeStatus")}
       </Badge>
     ) : (
