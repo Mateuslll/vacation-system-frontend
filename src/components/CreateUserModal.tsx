@@ -128,13 +128,13 @@ export function CreateUserModal({ trigger, onSuccess }: CreateUserModalProps) {
 
           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-medium">
-              Senha Temporária *
+              Senha *
             </Label>
             <div className="relative">
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Digite uma senha temporária"
+                placeholder="Digite uma senha segura"
                 className="h-10 pr-10"
                 {...form.register("password")}
               />
