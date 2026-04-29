@@ -31,9 +31,11 @@ Sistema moderno e completo para gerenciamento de usuários, solicitações de f�
 
 ## ⚡ Quick Review (Docker Hub)
 
-As duas imagens publicas ja estao no Docker Hub:
+As duas imagens publicas ja estao no Docker Hub (tag `latest` com manifest **multi-arch** `linux/amd64` + `linux/arm64`):
 - `mateuslll/taskflow-frontend:latest`
 - `mateuslll/taskflow-backend:latest`
+
+Para popular a base com **3 gestores + 12 utilizadores** (mesma senha demo), usa o script no repositório do backend: `task-flow-backend/scripts/seed_demo_users.py` — ver secção **Seed de utilizadores demo** no `README.md` do backend.
 
 ### Step by step
 
